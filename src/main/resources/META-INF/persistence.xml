@@ -1,0 +1,24 @@
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
+             version="2.1">
+    <persistence-unit name="test-food-facts" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class>fr.diginamic.entites.Additif</class>
+        <class>fr.diginamic.entites.Allergene</class>
+        <class>fr.diginamic.entites.Categorie</class>
+        <class>fr.diginamic.entites.Ingredient</class>
+        <class>fr.diginamic.entites.Produit</class>
+        <properties>
+            <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.archive.autodetection" value="" />
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:mariadb://localhost:3306/openfoodfacts"/>
+            <property name="jakarta.persistence.jdbc.user" value="user-tp"/>
+            <property name="jakarta.persistence.jdbc.password" value="pazo1928!"/>
+            <property name="jakarta.persistence.jdbc.driver" value="org.mariadb.jdbc.Driver"/>
+            <property name="hibernate.show_sql" value="false"/>
+        </properties>
+    </persistence-unit>
+</persistence>
+
