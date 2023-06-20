@@ -1,4 +1,6 @@
 package fr.diginamic.dao;
 
-public interface IngredientDao {
+import fr.diginamic.entites.Ingredient;
+
+public interface IngredientDao extends BaseDao<Ingredient> {
 }

@@ -1,4 +1,6 @@
 package fr.diginamic.dao;
 
-public interface CategorieDao {
+import fr.diginamic.entites.Categorie;
+
+public interface CategorieDao extends BaseDao<Categorie> {
 }

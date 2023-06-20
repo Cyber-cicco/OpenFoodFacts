@@ -7,6 +7,9 @@ import java.util.Set;
 
 @Entity
 public class Produit extends BaseEntity{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String nom;
     private Integer energie100g;
     private Integer graisse100g ;
@@ -37,10 +40,22 @@ public class Produit extends BaseEntity{
     private Categorie categorie;
 
     @ManyToMany
+    @JoinTable(name = "produit_ingredients",
+            joinColumns = @JoinColumn(name = "id_produit", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "id_ingredient", referencedColumnName = "id")
+    )
+    private Set<Ingredient> ingredients;
+
+    @ManyToMany
     @JoinTable(name = "produit_allergenes",
         joinColumns = @JoinColumn(name = "id_produit", referencedColumnName = "id"),
-        inverseJoinColumns = @JoinColumn(name = "id_allergene")
+        inverseJoinColumns = @JoinColumn(name = "id_allergene", referencedColumnName = "id")
     )
     private Set<Allergene> allergenes;
+    @ManyToMany
+    @JoinTable(name = "produit_additifs",
+            joinColumns = @JoinColumn(name = "id_produit", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "id_additif", referencedColumnName = "id")
+    )
     private Set<Additif> additifs;
 }

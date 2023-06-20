@@ -1,4 +1,6 @@
 package fr.diginamic.dao;
 
-public interface ProduitDao {
+import fr.diginamic.entites.Produit;
+
+public interface ProduitDao extends BaseDao<Produit> {
 }

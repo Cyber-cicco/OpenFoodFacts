@@ -1,4 +1,6 @@
 package fr.diginamic.dao;
 
-public interface AllergeneDao {
+import fr.diginamic.entites.Allergene;
+
+public interface AllergeneDao extends BaseDao<Allergene> {
 }

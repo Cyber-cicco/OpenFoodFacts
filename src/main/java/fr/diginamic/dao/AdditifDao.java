@@ -1,4 +1,6 @@
 package fr.diginamic.dao;
 
-public interface AdditifDao {
+import fr.diginamic.entites.Additif;
+
+public interface AdditifDao extends BaseDao<Additif>{
 }
