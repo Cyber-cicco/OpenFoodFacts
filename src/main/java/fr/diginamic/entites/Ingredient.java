@@ -11,4 +11,18 @@ public class Ingredient extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nom;
+    public Ingredient(String nom) {
+        this.nom = nom;
+    }
+
+    public Ingredient() {
+    }
+
+    @Override
+    public String toString() {
+        return "Ingredient{" +
+                "id=" + id +
+                ", nom='" + nom + '\'' +
+                '}';
+    }
 }

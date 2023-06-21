@@ -13,4 +13,18 @@ public class Categorie extends BaseEntity {
     private String libelle;
     @OneToMany(mappedBy = "categorie")
     private Set<Produit> produits;
+
+    public Categorie() {
+    }
+
+    @Override
+    public String toString() {
+        return "Categorie{" +
+                "libelle='" + libelle + '\'' +
+                '}';
+    }
+
+    public Categorie(String libelle) {
+        this.libelle = libelle;
+    }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 public class LineParserImpl implements LineParser {
 
     private final LineTokeniser lineTokeniser;
-    private SyntaxToken[][] tokens = new SyntaxToken[13433][];
+    public SyntaxToken[][] tokens = new SyntaxToken[13433][];
     private int position;
 
     public LineParserImpl(LineTokeniser lineTokeniser){
@@ -29,7 +29,4 @@ public class LineParserImpl implements LineParser {
         this.tokens[position++] = tokens.toArray(new SyntaxToken[tokens.size()]);
     }
 
-    public SyntaxToken[][] getTokens() {
-        return tokens;
-    }
 }

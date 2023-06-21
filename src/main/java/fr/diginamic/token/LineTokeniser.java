@@ -60,7 +60,9 @@ public class LineTokeniser {
             case '/' -> {return new SyntaxToken(SyntaxKind.ENTITY_SEPARATOR, _position++, "/");}
             case ';' -> {return new SyntaxToken(SyntaxKind.ENTITY_SEPARATOR, _position++, ";");}
             case ':' -> {return new SyntaxToken(SyntaxKind.DESCRIPTOR, _position++, ":");}
-            case '_' -> {return new SyntaxToken(SyntaxKind.BAD_TOKEN, _position++, "_");}
+            case '_' -> {return new SyntaxToken(SyntaxKind.IGNORED_TOKEN, _position++, "_");}
+            case '*' -> {return new SyntaxToken(SyntaxKind.IGNORED_TOKEN, _position++, "*");}
+            case '%' -> {return new SyntaxToken(SyntaxKind.IGNORED_TOKEN, _position++, "%");}
             case '-' -> {return new SyntaxToken(SyntaxKind.MINUS_TOKEN, _position++, "/");}
             default ->{
                 _diagnostics.add("ERROR : bad charcacter input '" + current() + "'");

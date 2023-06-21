@@ -2,6 +2,7 @@ package fr.diginamic;
 
 import fr.diginamic.parser.FileParser;
 import fr.diginamic.parser.FileParserImpl;
+import fr.diginamic.types.ValeurNutritionnelle;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
