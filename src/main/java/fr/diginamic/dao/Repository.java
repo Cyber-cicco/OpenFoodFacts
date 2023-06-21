@@ -1,5 +1,6 @@
 package fr.diginamic.dao;
 
+import fr.diginamic.types.RepositoryType;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -11,26 +12,37 @@ public class Repository implements AutoCloseable{
     private final EntityManager em;
     private final EntityManagerFactory emf;
     private final String SELECT = "select e from %s e";
+    private final RepositoryType repositoryType;
     private final String SELECT_WITH_CONDITION = "select e from %s e where %s = %s";
     private static List<Repository> generalRepositores = new ArrayList<>();
 
     private final String dataBaseName;
-    private Repository(String dataBaseName){
+    private Repository(String dataBaseName, RepositoryType repositoryType){
         emf = Persistence.createEntityManagerFactory(dataBaseName);
         em = emf.createEntityManager();
+        this.repositoryType = repositoryType;
         this.dataBaseName = dataBaseName;
     }
 
-    public static Repository getInstance(String dataBaseName){
-        List<Repository> repository = generalRepositores.stream().filter(generalRepository -> generalRepository.getDataBaseName()  == dataBaseName).toList();
+    public static Repository getInstance(String dataBaseName, RepositoryType repositoryType){
+        List<Repository> repository = generalRepositores.stream()
+                .filter(generalRepository -> generalRepository.getDataBaseName()  == dataBaseName && generalRepository.repositoryType == repositoryType).toList();
         if(repository.size() > 0){
             return repository.get(0);
         }
-        return new Repository(dataBaseName);
+        var newRepo = new Repository(dataBaseName, repositoryType);
+        generalRepositores.add(newRepo);
+        System.out.println(newRepo);
+        return newRepo;
     }
 
     public <T> void persistEntity(T entity){
-        doTransaction(entity, em::persist);
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tr = em.getTransaction();
+        tr.begin();
+        em.persist(entity);
+        tr.commit();
+        em.close();
     }
 
     public <T> void doTransaction(T entity, Consumer<T> transaction){
@@ -38,6 +50,7 @@ public class Repository implements AutoCloseable{
         tr.begin();
         transaction.accept(entity);
         tr.commit();
+        em.close();
     }
 
     public <T> List<T> getAll(String entityName){
@@ -71,6 +84,14 @@ public class Repository implements AutoCloseable{
         if (o == null || getClass() != o.getClass()) return false;
         Repository that = (Repository) o;
         return ((Repository) o).getDataBaseName() == dataBaseName;
+    }
+
+    @Override
+    public String toString() {
+        return "Repository{" +
+                "repositoryType=" + repositoryType +
+                ", dataBaseName='" + dataBaseName + '\'' +
+                '}';
     }
 
     public String getDataBaseName() {

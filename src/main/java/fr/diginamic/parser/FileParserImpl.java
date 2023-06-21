@@ -1,20 +1,19 @@
 package fr.diginamic.parser;
 
+import fr.diginamic.dao.*;
 import fr.diginamic.entites.*;
+import fr.diginamic.threader.VirtualThread;
 import fr.diginamic.token.LineTokeniser;
 import fr.diginamic.token.SyntaxKind;
-import fr.diginamic.token.SyntaxToken;
 import fr.diginamic.types.ValeurNutritionnelle;
-import org.checkerframework.checker.units.qual.A;
+import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -27,6 +26,14 @@ public class FileParserImpl implements FileParser {
     private final Map<String, Categorie> categorieMap = new HashMap<>();
     private final Map<String, Allergene> allergeneMap = new HashMap<>();
     private final Map<String, Additif> additifMap = new HashMap<>();
+    private final List<Thread> threads = new ArrayList<>();
+
+    private final CategorieDao categorieDao = DaoFactory.getCategorieDao();
+    private final AllergeneDao allergeneDao = DaoFactory.getAllergeneDao();
+    private final MarqueDao marqueDao = DaoFactory.getMarqueDao();
+    private final IngredientDao ingredientDao = DaoFactory.getIngredientDao();
+    private final AdditifDao additifDao = DaoFactory.getAdditifDao();
+    private final ProduitDao produitDao = DaoFactory.getProduitDao();
 
     public FileParserImpl() {
         LineTokeniser tokeniser = new LineTokeniser();
@@ -37,21 +44,29 @@ public class FileParserImpl implements FileParser {
      * Méthode permettant de créer une nouvelle catégorie
      * si elle n'existe ou qui permet de la récupérer de la map
      * */
+    @SneakyThrows
     private Categorie getCategorie(String nomCategorie){
         if(categorieMap.containsKey(nomCategorie)){
             return categorieMap.get(nomCategorie);
         }
         Categorie categorie = new Categorie(nomCategorie);
         categorieMap.put(nomCategorie, categorie);
+        //categorieDao.sauvegarder(categorie);
+        Thread thread = VirtualThread.getThread("persistence Catégorie", ()->{categorieDao.sauvegarder(categorie);});
+        threads.add(thread);
         return categorie;
     }
 
+    @SneakyThrows
     private Allergene getAllergene(String nomAllergene){
-        if(categorieMap.containsKey(nomAllergene)){
+        if(allergeneMap.containsKey(nomAllergene)){
             return allergeneMap.get(nomAllergene);
         }
         Allergene allergene = new Allergene(nomAllergene);
         allergeneMap.put(nomAllergene, allergene);
+        //allergeneDao.sauvegarder(allergene);
+        Thread thread = VirtualThread.getThread("persistence Allergene", ()->{allergeneDao.sauvegarder(allergene);});
+        threads.add(thread);
         return allergene;
     }
 
@@ -61,6 +76,9 @@ public class FileParserImpl implements FileParser {
         }
         Marque marque = new Marque(nomMarque);
         marqueMap.put(nomMarque, marque);
+        //marqueDao.sauvegarder(marque);
+        Thread thread = VirtualThread.getThread("persistence Marque", ()->{marqueDao.sauvegarder(marque);});
+        threads.add(thread);
         return marque;
     }
 
@@ -70,6 +88,10 @@ public class FileParserImpl implements FileParser {
         }
         Ingredient ingredient = new Ingredient(nomIngredient);
         ingredientMap.put(nomIngredient, ingredient);
+        ingredientDao.sauvegarder(ingredient);
+        //Thread thread = VirtualThread.getThread("persistence Ingredient", ()->{
+        //  ingredientDao.sauvegarder(ingredient);});
+        //threads.add(thread);
         return ingredient;
     }
     private Additif getAdditif(String code, String nom) {
@@ -78,6 +100,9 @@ public class FileParserImpl implements FileParser {
         }
         Additif additif = new Additif(code, nom);
         additifMap.put(code, additif);
+        //additifDao.sauvegarder(additif);
+        Thread thread = VirtualThread.getThread("persistence Additif", ()->{additifDao.sauvegarder(additif);});
+        threads.add(thread);
         return additif;
     }
 
@@ -97,6 +122,7 @@ public class FileParserImpl implements FileParser {
         return ++j;
     }
 
+    @SneakyThrows
     public void readCsv() throws URISyntaxException, IOException {
         Path path = Paths.get(Objects.requireNonNull(getClass().getClassLoader()
                         .getResource("open-food-facts.csv"))
@@ -227,11 +253,24 @@ public class FileParserImpl implements FileParser {
                     }
                     ++j;
                 }
-                //log permettant de débug chaque ajout dans le CSV.
-                System.out.println(produit);
-                System.out.println();
+                for(int k = 0; k < threads.size(); k++){
+                  threads.get(k).join();
+                }
+                threads.clear();
+                if(i%100 == 0) System.out.println(i);
+                produitDao.sauvegarder(produit);
             }
         }
+        closeDaos();
     }
 
+    private void closeDaos(){
+        additifDao.close();
+        allergeneDao.close();
+        ingredientDao.close();
+        produitDao.close();
+        marqueDao.close();
+        categorieDao.close();
+
+    }
 }

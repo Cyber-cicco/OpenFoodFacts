@@ -2,10 +2,15 @@ package fr.diginamic.dao;
 
 import fr.diginamic.config.DatabaseConfig;
 import fr.diginamic.entites.Categorie;
+import fr.diginamic.types.RepositoryType;
 
 import java.util.List;
 
 public class CategorieDaoImpl extends RepositoryDao implements CategorieDao {
+
+    public CategorieDaoImpl() {
+        super(RepositoryType.CATEGORIE);
+    }
 
     @Override
     public List<Categorie> extraire() {
