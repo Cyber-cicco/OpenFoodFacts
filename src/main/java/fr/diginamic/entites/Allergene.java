@@ -14,4 +14,10 @@ public class Allergene extends BaseEntity{
     private Long id;
     private String libelle;
 
+    public Allergene(String libelle) {
+        this.libelle = libelle;
+    }
+
+    public Allergene() {
+    }
 }

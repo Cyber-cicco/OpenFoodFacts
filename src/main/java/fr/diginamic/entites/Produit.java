@@ -34,6 +34,7 @@ public class Produit extends BaseEntity{
     private Double iron100g;
     private Double fer100g;
     private Double betaCarotene100g;
+    private boolean presenceHuilePalme;
     @Enumerated
     private ValeurNutritionnelle valeurNutritionnelle;
 
@@ -271,6 +272,14 @@ public class Produit extends BaseEntity{
         this.marque = marque;
     }
 
+    public boolean isPresenceHuilePalme() {
+        return presenceHuilePalme;
+    }
+
+    public void setPresenceHuilePalme(boolean presenceHuilePalme) {
+        this.presenceHuilePalme = presenceHuilePalme;
+    }
+
     public void addAdditif(Additif additif){
         additifs.add(additif);
     }
@@ -317,6 +326,7 @@ public class Produit extends BaseEntity{
                 ", ingredients=" + ingredients +
                 ", allergenes=" + allergenes +
                 ", additifs=" + additifs +
+                ", presenceHuilePalme=" + presenceHuilePalme +
                 '}';
     }
 }

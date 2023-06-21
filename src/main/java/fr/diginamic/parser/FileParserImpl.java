@@ -5,6 +5,7 @@ import fr.diginamic.token.LineTokeniser;
 import fr.diginamic.token.SyntaxKind;
 import fr.diginamic.token.SyntaxToken;
 import fr.diginamic.types.ValeurNutritionnelle;
+import org.checkerframework.checker.units.qual.A;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -45,6 +46,15 @@ public class FileParserImpl implements FileParser {
         return categorie;
     }
 
+    private Allergene getAllergene(String nomAllergene){
+        if(categorieMap.containsKey(nomAllergene)){
+            return allergeneMap.get(nomAllergene);
+        }
+        Allergene allergene = new Allergene(nomAllergene);
+        allergeneMap.put(nomAllergene, allergene);
+        return allergene;
+    }
+
     private Marque getMarque(String nomMarque){
         if(marqueMap.containsKey(nomMarque)){
             return marqueMap.get(nomMarque);
@@ -61,6 +71,14 @@ public class FileParserImpl implements FileParser {
         Ingredient ingredient = new Ingredient(nomIngredient);
         ingredientMap.put(nomIngredient, ingredient);
         return ingredient;
+    }
+    private Additif getAdditif(String code, String nom) {
+        if(additifMap.containsKey(code)){
+            return additifMap.get(code);
+        }
+        Additif additif = new Additif(code, nom);
+        additifMap.put(code, additif);
+        return additif;
     }
 
     private int set100g(Consumer<String> setter, int i, int j){
@@ -110,7 +128,7 @@ public class FileParserImpl implements FileParser {
                 }
                 produit.setNom(nomProduit);
                 ++j;
-                if(lineParser.tokens[i][j].getText() == ValeurNutritionnelle.a.toString()){
+                if(Objects.equals(lineParser.tokens[i][j].getText(), ValeurNutritionnelle.a.toString())){
                     produit.setValeurNutritionnelle(ValeurNutritionnelle.a);
                 } else if(lineParser.tokens[i][j].getText() == ValeurNutritionnelle.b.toString()){
                     produit.setValeurNutritionnelle(ValeurNutritionnelle.b);
@@ -165,10 +183,55 @@ public class FileParserImpl implements FileParser {
                 j = set100g((v)-> produit.setIron100g(Double.parseDouble(v)), i, j);
                 j = set100g((v)-> produit.setFer100g(Double.parseDouble(v)), i, j);
                 j = set100g((v)-> produit.setBetaCarotene100g(Double.parseDouble(v)), i, j);
+
+                produit.setPresenceHuilePalme(!Objects.equals(lineParser.tokens[i][j].getText(), "0"));
+
+                j++;
+                j++;
+
+                while (lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                    String nomAllergene = "";
+                    while (lineParser.tokens[i][j].getKind() != SyntaxKind.ENTITY_SEPARATOR &&
+                            lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                        if(lineParser.tokens[i][j].getKind() == SyntaxKind.WHITESPACE_TOKEN ||
+                                lineParser.tokens[i][j].getKind() == SyntaxKind.ENTITY_FIELD ||
+                                lineParser.tokens[i][j].getKind() == SyntaxKind.DESCRIPTOR){
+                            nomAllergene += lineParser.tokens[i][j].getText();
+                        }
+                        j++;
+                    }
+                    produit.addAllergene(getAllergene(nomAllergene.trim()));
+                    if(lineParser.tokens[i][j].getKind() == SyntaxKind.CSV_SEPARATOR){
+                        break;
+                    }
+                    ++j;
+                }
+                ++j;
+                while (lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                    String codeAdditif = "";
+                    while (lineParser.tokens[i][j].getKind() != SyntaxKind.MINUS_TOKEN &&
+                            lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                        codeAdditif += lineParser.tokens[i][j].getText();
+                        ++j;
+                    }
+                    ++j;
+                    String nomAdditif = "";
+                    while (lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR &&
+                            lineParser.tokens[i][j].getKind() != SyntaxKind.ENTITY_SEPARATOR ){
+                        nomAdditif += lineParser.tokens[i][j].getText();
+                        ++j;
+                    }
+                    produit.addAdditif(getAdditif(codeAdditif.trim(), nomAdditif.trim()));
+                    if(lineParser.tokens[i][j].getKind() == SyntaxKind.CSV_SEPARATOR){
+                        break;
+                    }
+                    ++j;
+                }
                 //log permettant de débug chaque ajout dans le CSV.
                 System.out.println(produit);
-
+                System.out.println();
             }
         }
     }
+
 }

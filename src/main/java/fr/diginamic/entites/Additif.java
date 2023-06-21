@@ -20,4 +20,13 @@ public class Additif extends BaseEntity{
         this.code = code;
         this.libelle = libelle;
     }
+
+    @Override
+    public String toString() {
+        return "Additif{" +
+                "id=" + id +
+                ", code='" + code + '\'' +
+                ", libelle='" + libelle + '\'' +
+                '}';
+    }
 }
