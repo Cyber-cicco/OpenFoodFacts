@@ -6,6 +6,7 @@ import fr.diginamic.threader.VirtualThread;
 import fr.diginamic.token.SyntaxKind;
 import fr.diginamic.token.SyntaxToken;
 import fr.diginamic.types.ValeurNutritionnelle;
+import static fr.diginamic.parser.Cache.*;
 import lombok.SneakyThrows;
 
 import java.util.*;
@@ -16,11 +17,6 @@ public class LineParserImpl implements LineParser{
     private SyntaxToken[] tokens;
     private Produit produit;
     private int tokenIndex;
-    private final Map<String, Marque> marqueMap = new HashMap<>();
-    private final Map<String, Ingredient> ingredientMap = new HashMap<>();
-    private final Map<String, Categorie> categorieMap = new HashMap<>();
-    private final Map<String, Allergene> allergeneMap = new HashMap<>();
-    private final Map<String, Additif> additifMap = new HashMap<>();
     private final List<Thread> threads = new ArrayList<>();
 
     private final CategorieDao categorieDao = DaoFactory.getCategorieDao();
@@ -73,10 +69,10 @@ public class LineParserImpl implements LineParser{
         }
         Ingredient ingredient = new Ingredient(nomIngredient);
         ingredientMap.put(nomIngredient, ingredient);
-        ingredientDao.sauvegarder(ingredient);
-        //Thread thread = VirtualThread.getThread("persistence Ingredient", ()->{
-        //  ingredientDao.sauvegarder(ingredient);});
-        //threads.add(thread);
+        //ingredientDao.sauvegarder(ingredient);
+        Thread thread = VirtualThread.getThread("persistence Ingredient", ()->{
+          ingredientDao.sauvegarder(ingredient);});
+        threads.add(thread);
         return ingredient;
     }
     private Additif getAdditif(String code, String nom) {

@@ -1,5 +1,6 @@
 package fr.diginamic.parser;
 
+import fr.diginamic.threader.VirtualThread;
 import fr.diginamic.token.LineTokeniser;
 import lombok.SneakyThrows;
 
@@ -15,6 +16,7 @@ public class FileParserImpl implements FileParser {
 
     private final FileTokeniserImpl fileTokeniser;
     private final LineParser lineParser = new LineParserImpl();
+    private final LineParser lineParser2 = new LineParserImpl();
 
     public FileParserImpl() {
         LineTokeniser tokeniser = new LineTokeniser();
@@ -33,9 +35,16 @@ public class FileParserImpl implements FileParser {
                 .toURI());
         try(Stream<String> lines = Files.lines(path)){
             lines.forEach(fileTokeniser::tokenise);
-            for(int i = 1; i < fileTokeniser.tokens.length; ++i){
-                lineParser.parseLine(fileTokeniser.tokens[i], i);
-            }
+            Thread firstHalf = VirtualThread.getThread("first", ()->{
+                for(int i = 1; i < fileTokeniser.tokens.length/2; ++i){
+                    lineParser.parseLine(fileTokeniser.tokens[i], i);
+                }});
+            Thread secondHalf = VirtualThread.getThread("second", ()->{
+                for(int i = fileTokeniser.tokens.length/2; i < fileTokeniser.tokens.length; ++i){
+                    lineParser2.parseLine(fileTokeniser.tokens[i], i);
+                }});
+            firstHalf.join();
+            secondHalf.join();
         }
         lineParser.closeDaos();
     }
