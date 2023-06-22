@@ -31,20 +31,20 @@ public class LineTokeniser {
         }
         if(Character.isAlphabetic(current())){
             int start = _position;
-            while (Character.isAlphabetic(current())){
+            while (Character.isAlphabetic(current()) || Character.isDigit(current())){
                 ++_position;
             }
             String text = _text.substring(start, _position);
-            return new SyntaxToken(SyntaxKind.ENTITY_FIELD, start, text.toLowerCase());
+            return new SyntaxToken((text.equals("et") || text.equals("ou")) ? SyntaxKind.INGREDIENT_SEPARATOR : SyntaxKind.ENTITY_FIELD, start, text.toLowerCase());
 
         }
-        if(Character.isDigit(current()) || current() == '.'){
+        if(Character.isDigit(current())){
             int start = _position;
             while (Character.isDigit(current()) || current() == '.'){
                 ++_position;
             }
             String text = _text.substring(start, _position);
-            return new SyntaxToken(SyntaxKind.ENTITY_FIELD, start, text);
+            return new SyntaxToken(SyntaxKind.NUMBER_FIELD, start, text);
         }
         if(Character.isWhitespace(current())){
             int start = _position;
@@ -56,6 +56,7 @@ public class LineTokeniser {
         }
         switch (current()) {
             case '|' -> {return new SyntaxToken(SyntaxKind.CSV_SEPARATOR, _position++, "|");}
+            case '.' -> {return new SyntaxToken(SyntaxKind.DOT_TOKEN, _position++, ".");}
             case ',' -> {return new SyntaxToken(SyntaxKind.ENTITY_SEPARATOR, _position++, ",");}
             case '/' -> {return new SyntaxToken(SyntaxKind.ENTITY_SEPARATOR, _position++, "/");}
             case ';' -> {return new SyntaxToken(SyntaxKind.ENTITY_SEPARATOR, _position++, ";");}
@@ -64,6 +65,8 @@ public class LineTokeniser {
             case '*' -> {return new SyntaxToken(SyntaxKind.IGNORED_TOKEN, _position++, "*");}
             case '%' -> {return new SyntaxToken(SyntaxKind.IGNORED_TOKEN, _position++, "%");}
             case '-' -> {return new SyntaxToken(SyntaxKind.MINUS_TOKEN, _position++, "/");}
+            case '(' -> {return new SyntaxToken(SyntaxKind.L_PARENTHESIS, _position++, "/");}
+            case ')' -> {return new SyntaxToken(SyntaxKind.R_PARENTHESIS, _position++, "/");}
             default ->{
                 _diagnostics.add("ERROR : bad charcacter input '" + current() + "'");
                 return new SyntaxToken(SyntaxKind.BAD_TOKEN, _position++, _text.substring(_position - 1, _position));

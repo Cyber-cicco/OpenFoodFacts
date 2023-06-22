@@ -19,8 +19,7 @@ import java.util.stream.Stream;
 
 public class FileParserImpl implements FileParser {
 
-    private final LineParserImpl lineParser;
-
+    private final FileTokeniserImpl fileTokeniser;
     private final Map<String, Marque> marqueMap = new HashMap<>();
     private final Map<String, Ingredient> ingredientMap = new HashMap<>();
     private final Map<String, Categorie> categorieMap = new HashMap<>();
@@ -37,7 +36,7 @@ public class FileParserImpl implements FileParser {
 
     public FileParserImpl() {
         LineTokeniser tokeniser = new LineTokeniser();
-        lineParser = new LineParserImpl(tokeniser);
+        fileTokeniser = new FileTokeniserImpl(tokeniser);
     }
 
     /**
@@ -108,8 +107,8 @@ public class FileParserImpl implements FileParser {
 
     private int set100g(Consumer<String> setter, int i, int j){
         String _100g = "";
-        while (lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
-            _100g += lineParser.tokens[i][j].getText();
+        while (fileTokeniser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+            _100g += fileTokeniser.tokens[i][j].getText();
             ++j;
         }
         if(!_100g.isEmpty()){
@@ -128,63 +127,74 @@ public class FileParserImpl implements FileParser {
                         .getResource("open-food-facts.csv"))
                 .toURI());
         try(Stream<String> lines = Files.lines(path)){
-            lines.forEach(lineParser::parseLine);
-            for(int i = 1; i < lineParser.tokens.length; ++i){
+            lines.forEach(fileTokeniser::tokenise);
+            for(int i = 1; i < fileTokeniser.tokens.length; ++i){
                 Produit produit = new Produit();
                 int j = 0;
                 String nomCategorie = "";
                 //boucle jusqu'au premier pour récupérer le nom d'une catégorie
-                while (lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
-                    nomCategorie += lineParser.tokens[i][j].getText();
+                while (fileTokeniser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                    nomCategorie += fileTokeniser.tokens[i][j].getText();
                     ++j;
                 }
                 produit.setCategorie(getCategorie(nomCategorie));
                 ++j;
                 String nomMarque = "";
-                while (lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
-                    nomMarque += lineParser.tokens[i][j].getText();
+                while (fileTokeniser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                    nomMarque += fileTokeniser.tokens[i][j].getText();
                     ++j;
                 }
                 produit.setMarque(getMarque(nomMarque));
                 ++j;
                 String nomProduit = "";
-                while (lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
-                    nomProduit += lineParser.tokens[i][j].getText();
+                while (fileTokeniser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                    nomProduit += fileTokeniser.tokens[i][j].getText();
                     ++j;
                 }
                 produit.setNom(nomProduit);
                 ++j;
-                if(Objects.equals(lineParser.tokens[i][j].getText(), ValeurNutritionnelle.a.toString())){
+                if(Objects.equals(fileTokeniser.tokens[i][j].getText(), ValeurNutritionnelle.a.toString())){
                     produit.setValeurNutritionnelle(ValeurNutritionnelle.a);
-                } else if(lineParser.tokens[i][j].getText() == ValeurNutritionnelle.b.toString()){
+                } else if(fileTokeniser.tokens[i][j].getText() == ValeurNutritionnelle.b.toString()){
                     produit.setValeurNutritionnelle(ValeurNutritionnelle.b);
-                } else if(lineParser.tokens[i][j].getText() == ValeurNutritionnelle.c.toString()){
+                } else if(fileTokeniser.tokens[i][j].getText() == ValeurNutritionnelle.c.toString()){
                     produit.setValeurNutritionnelle(ValeurNutritionnelle.c);
-                } else if(lineParser.tokens[i][j].getText() == ValeurNutritionnelle.d.toString()){
+                } else if(fileTokeniser.tokens[i][j].getText() == ValeurNutritionnelle.d.toString()){
                     produit.setValeurNutritionnelle(ValeurNutritionnelle.d);
-                } else if(lineParser.tokens[i][j].getText() == ValeurNutritionnelle.e.toString()){
+                } else if(fileTokeniser.tokens[i][j].getText() == ValeurNutritionnelle.e.toString()){
                     produit.setValeurNutritionnelle(ValeurNutritionnelle.e);
-                } else if(lineParser.tokens[i][j].getText() == ValeurNutritionnelle.f.toString()){
+                } else if(fileTokeniser.tokens[i][j].getText() == ValeurNutritionnelle.f.toString()){
                     produit.setValeurNutritionnelle(ValeurNutritionnelle.f);
                 }
                 ++j;
                 ++j;
-                while (lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                while (fileTokeniser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
                     String nomIngredient = "";
-                    while (lineParser.tokens[i][j].getKind() != SyntaxKind.ENTITY_SEPARATOR &&
-                            lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
-                        if(lineParser.tokens[i][j].getKind() == SyntaxKind.WHITESPACE_TOKEN ||
-                        lineParser.tokens[i][j].getKind() == SyntaxKind.ENTITY_FIELD ||
-                        lineParser.tokens[i][j].getKind() == SyntaxKind.DESCRIPTOR){
-                            nomIngredient += lineParser.tokens[i][j].getText();
+                    while (fileTokeniser.tokens[i][j].getKind() != SyntaxKind.ENTITY_SEPARATOR &&
+                            fileTokeniser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR &&
+                            fileTokeniser.tokens[i][j].getKind() != SyntaxKind.INGREDIENT_SEPARATOR &&
+                            fileTokeniser.tokens[i][j].getKind() != SyntaxKind.DOT_TOKEN){
+                        if(fileTokeniser.tokens[i][j].getKind() == SyntaxKind.WHITESPACE_TOKEN ||
+                        fileTokeniser.tokens[i][j].getKind() == SyntaxKind.ENTITY_FIELD){
+                            nomIngredient += fileTokeniser.tokens[i][j].getText();
                         }
-                        j++;
+                        if(fileTokeniser.tokens[i][j].getKind() == SyntaxKind.DESCRIPTOR){
+                            nomIngredient = "";
+                        }
+                        ++j;
                     }
-                    produit.addIngredient(getIngredient(nomIngredient.trim()));
-                    if(lineParser.tokens[i][j].getKind() == SyntaxKind.CSV_SEPARATOR){
+                    nomIngredient = nomIngredient.trim();
+                    if(!nomIngredient.isBlank()) produit.addIngredient(getIngredient(nomIngredient));
+                    if(fileTokeniser.tokens[i][j].getKind() == SyntaxKind.CSV_SEPARATOR){
                         break;
                     }
                     ++j;
+                    if(fileTokeniser.tokens[i][j].getKind() == SyntaxKind.L_PARENTHESIS){
+                        while(fileTokeniser.tokens[i][j].getKind() != SyntaxKind.L_PARENTHESIS ||
+                                fileTokeniser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                            ++j;
+                        }
+                    }
                 }
                 ++j;
                 j = set100g((v)-> produit.setEnergie100g(Double.parseDouble(v)), i, j);
@@ -210,45 +220,45 @@ public class FileParserImpl implements FileParser {
                 j = set100g((v)-> produit.setFer100g(Double.parseDouble(v)), i, j);
                 j = set100g((v)-> produit.setBetaCarotene100g(Double.parseDouble(v)), i, j);
 
-                produit.setPresenceHuilePalme(!Objects.equals(lineParser.tokens[i][j].getText(), "0"));
+                produit.setPresenceHuilePalme(!Objects.equals(fileTokeniser.tokens[i][j].getText(), "0"));
 
                 j++;
                 j++;
 
-                while (lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                while (fileTokeniser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
                     String nomAllergene = "";
-                    while (lineParser.tokens[i][j].getKind() != SyntaxKind.ENTITY_SEPARATOR &&
-                            lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
-                        if(lineParser.tokens[i][j].getKind() == SyntaxKind.WHITESPACE_TOKEN ||
-                                lineParser.tokens[i][j].getKind() == SyntaxKind.ENTITY_FIELD ||
-                                lineParser.tokens[i][j].getKind() == SyntaxKind.DESCRIPTOR){
-                            nomAllergene += lineParser.tokens[i][j].getText();
+                    while (fileTokeniser.tokens[i][j].getKind() != SyntaxKind.ENTITY_SEPARATOR &&
+                            fileTokeniser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                        if(fileTokeniser.tokens[i][j].getKind() == SyntaxKind.WHITESPACE_TOKEN ||
+                                fileTokeniser.tokens[i][j].getKind() == SyntaxKind.ENTITY_FIELD ||
+                                fileTokeniser.tokens[i][j].getKind() == SyntaxKind.DESCRIPTOR){
+                            nomAllergene += fileTokeniser.tokens[i][j].getText();
                         }
                         j++;
                     }
                     produit.addAllergene(getAllergene(nomAllergene.trim()));
-                    if(lineParser.tokens[i][j].getKind() == SyntaxKind.CSV_SEPARATOR){
+                    if(fileTokeniser.tokens[i][j].getKind() == SyntaxKind.CSV_SEPARATOR){
                         break;
                     }
                     ++j;
                 }
                 ++j;
-                while (lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                while (fileTokeniser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
                     String codeAdditif = "";
-                    while (lineParser.tokens[i][j].getKind() != SyntaxKind.MINUS_TOKEN &&
-                            lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
-                        codeAdditif += lineParser.tokens[i][j].getText();
+                    while (fileTokeniser.tokens[i][j].getKind() != SyntaxKind.MINUS_TOKEN &&
+                            fileTokeniser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR){
+                        codeAdditif += fileTokeniser.tokens[i][j].getText();
                         ++j;
                     }
                     ++j;
                     String nomAdditif = "";
-                    while (lineParser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR &&
-                            lineParser.tokens[i][j].getKind() != SyntaxKind.ENTITY_SEPARATOR ){
-                        nomAdditif += lineParser.tokens[i][j].getText();
+                    while (fileTokeniser.tokens[i][j].getKind() != SyntaxKind.CSV_SEPARATOR &&
+                            fileTokeniser.tokens[i][j].getKind() != SyntaxKind.ENTITY_SEPARATOR ){
+                        nomAdditif += fileTokeniser.tokens[i][j].getText();
                         ++j;
                     }
                     produit.addAdditif(getAdditif(codeAdditif.trim(), nomAdditif.trim()));
-                    if(lineParser.tokens[i][j].getKind() == SyntaxKind.CSV_SEPARATOR){
+                    if(fileTokeniser.tokens[i][j].getKind() == SyntaxKind.CSV_SEPARATOR){
                         break;
                     }
                     ++j;
