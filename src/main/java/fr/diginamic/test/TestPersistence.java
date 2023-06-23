@@ -3,6 +3,9 @@ package fr.diginamic.test;
 import fr.diginamic.dao.*;
 import fr.diginamic.entites.Additif;
 
+/**
+ * Classe de teste pour les daos
+ * */
 public class TestPersistence {
 
     public static void main(String[] args) {

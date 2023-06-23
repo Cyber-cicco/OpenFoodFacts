@@ -4,6 +4,7 @@ import fr.diginamic.threader.VirtualThread;
 
 import static java.lang.Thread.sleep;
 
+/**Classe de test pour les threads*/
 public class TestThreads {
 
     public static void main(String[] args) throws InterruptedException {
