@@ -7,6 +7,7 @@ import fr.diginamic.token.SyntaxKind;
 import fr.diginamic.token.SyntaxToken;
 import fr.diginamic.types.ValeurNutritionnelle;
 import static fr.diginamic.parser.Cache.*;
+import static fr.diginamic.config.CSVParams.EXPECTED_SEPARATORS;
 import lombok.SneakyThrows;
 
 import java.util.*;
@@ -45,7 +46,7 @@ public class LineParserImpl implements LineParser{
      * a passé en paramètre.
      * Sinon, on crée une nouvelle catégore à partir de son nom,
      * et on l'insère dans le cache, puis en base.
-     * @param nomCategorie
+     * @param nomCategorie : le nom de la catégorie
      * @return Categorie
      * */
     @SneakyThrows
@@ -56,7 +57,7 @@ public class LineParserImpl implements LineParser{
         Categorie categorie = new Categorie(nomCategorie);
         categorieMap.put(nomCategorie, categorie);
         //categorieDao.sauvegarder(categorie);
-        Thread thread = VirtualThread.getThread("persistence Catégorie", ()->{categorieDao.sauvegarder(categorie);});
+        Thread thread = VirtualThread.getThread("persistence Catégorie", ()->categorieDao.sauvegarder(categorie));
         threads.add(thread);
         return categorie;
     }
@@ -67,7 +68,7 @@ public class LineParserImpl implements LineParser{
      * a passé en paramètre.
      * Sinon, on crée un nouvel allergène à partir de son nom,
      * et on l'insère dans le cache, puis en base.
-     * @param nomAllergene
+     * @param nomAllergene : nom de l'allergene
      * @return Allergene
      * */
     @SneakyThrows
@@ -89,7 +90,7 @@ public class LineParserImpl implements LineParser{
      * a passé en paramètre.
      * Sinon, on crée une nouvelle marque à partir de son nom,
      * et on l'insère dans le cache, puis en base.
-     * @param nomMarque
+     * @param nomMarque : nom de la marque
      * @return Marque
      * */
     private Marque getMarque(String nomMarque){
@@ -99,7 +100,7 @@ public class LineParserImpl implements LineParser{
         Marque marque = new Marque(nomMarque);
         marqueMap.put(nomMarque, marque);
         //marqueDao.sauvegarder(marque);
-        Thread thread = VirtualThread.getThread("persistence Marque", ()->{marqueDao.sauvegarder(marque);});
+        Thread thread = VirtualThread.getThread("persistence Marque", ()->marqueDao.sauvegarder(marque));
         threads.add(thread);
         return marque;
     }
@@ -110,7 +111,7 @@ public class LineParserImpl implements LineParser{
      * a passé en paramètre.
      * Sinon, on crée un nouvel ingrédient à partir de son nom,
      * et on l'insère dans le cache, puis en base.
-     * @param nomIngredient
+     * @param nomIngredient : nom de l'ingrédient
      * @return Ingredient
      * */
     private Ingredient getIngredient(String nomIngredient){
@@ -120,8 +121,7 @@ public class LineParserImpl implements LineParser{
         Ingredient ingredient = new Ingredient(nomIngredient);
         ingredientMap.put(nomIngredient, ingredient);
         //ingredientDao.sauvegarder(ingredient);
-        Thread thread = VirtualThread.getThread("persistence Ingredient", ()->{
-          ingredientDao.sauvegarder(ingredient);});
+        Thread thread = VirtualThread.getThread("persistence Ingredient", ()->ingredientDao.sauvegarder(ingredient));
         threads.add(thread);
         return ingredient;
     }
@@ -131,8 +131,8 @@ public class LineParserImpl implements LineParser{
      * a passé en paramètre.
      * Sinon, on crée un nouvel additif à partir de son nom et de son code,
      * et on l'insère dans le cache, puis en base.
-     * @param code
-     * @param nom
+     * @param code : code unique de l'additif
+     * @param nom : nom de l'additif
      * @return Additif
      * */
     private Additif getAdditif(String code, String nom) {
@@ -142,7 +142,7 @@ public class LineParserImpl implements LineParser{
         Additif additif = new Additif(code, nom);
         additifMap.put(code, additif);
         //additifDao.sauvegarder(additif);
-        Thread thread = VirtualThread.getThread("persistence Additif", ()->{additifDao.sauvegarder(additif);});
+        Thread thread = VirtualThread.getThread("persistence Additif", ()->additifDao.sauvegarder(additif));
         threads.add(thread);
         return additif;
     }
@@ -162,7 +162,7 @@ public class LineParserImpl implements LineParser{
             try{
                 setter.accept(_100g);
             } catch (NumberFormatException e){
-                //System.out.println("Erreur de parsing de nombre à la ligne " + lineNumber);
+                System.out.println("Erreur de parsing de nombre à la ligne " + lineNumber);
             }
         }
         nextToken();
@@ -245,6 +245,18 @@ public class LineParserImpl implements LineParser{
     }
 
     /**
+     * Méthode permettant de vérifier les tokens suivants ou précédents
+     * de la ligne
+     * @param offset : nombre de tokens auxquels on souhaite regarder.
+     * */
+    private SyntaxToken peek(int offset){
+        if(tokenIndex + offset >= tokens.length){
+            return new SyntaxToken(SyntaxKind.BAD_TOKEN, tokenIndex + offset, null);
+        }
+        return tokens[tokenIndex + offset];
+    }
+
+    /**
      * Méthode permettant de récupérer le nombre de séparateurs CSVs attendus dans
      * la partie sur les ingrédients.
      * En effet, il n'est pas si rare que des petits malins aient insérés des séparateurs
@@ -253,8 +265,15 @@ public class LineParserImpl implements LineParser{
      * 1.
      * */
     private int getExpectedPipeNumber(){
-        return 1;
+        int expectedPipes = 1;
+        for(int i = 1; i < tokens.length; i++){
+            if(peek(i).getKind() == SyntaxKind.CSV_SEPARATOR){
+                ++expectedPipes;
+            }
+        }
+        return EXPECTED_SEPARATORS - expectedPipes;
     }
+
     /**
      * Méthode contenant les règles métier pour parcourir la liste d'ingrédients
      * Va parse les ingrédients selon ces règles, et les associer au produit de

@@ -19,4 +19,9 @@ public class MarqueDaoImpl extends RepositoryDao implements MarqueDao{
     public void sauvegarder(Marque entity) {
         repository.persistEntity(entity);
     }
+
+    @Override
+    public void sauvegarderMultipe(Marque[] entites) {
+        repository.persistMultipleEntites(entites);
+    }
 }

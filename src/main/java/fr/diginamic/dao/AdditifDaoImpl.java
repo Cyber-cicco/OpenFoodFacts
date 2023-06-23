@@ -1,6 +1,5 @@
 package fr.diginamic.dao;
 
-import fr.diginamic.config.DatabaseConfig;
 import fr.diginamic.entites.Additif;
 import fr.diginamic.types.RepositoryType;
 
@@ -19,5 +18,10 @@ public class AdditifDaoImpl extends RepositoryDao implements AdditifDao{
     @Override
     public void sauvegarder(Additif entity) {
         repository.persistEntity(entity);
+    }
+
+    @Override
+    public void sauvegarderMultipe(Additif[] entites) {
+        repository.persistMultipleEntites(entites);
     }
 }

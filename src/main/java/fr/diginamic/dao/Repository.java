@@ -3,10 +3,10 @@ package fr.diginamic.dao;
 import fr.diginamic.types.RepositoryType;
 import jakarta.persistence.*;
 
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class Repository implements AutoCloseable{
@@ -16,7 +16,7 @@ public class Repository implements AutoCloseable{
     private final String SELECT = "select e from %s e";
     private final RepositoryType repositoryType;
     private final String SELECT_WITH_CONDITION = "select e from %s e where %s = %s";
-    private static List<Repository> generalRepositores = new ArrayList<>();
+    private static final List<Repository> generalRepositores = new ArrayList<>();
 
     private final String dataBaseName;
     private Repository(String dataBaseName, RepositoryType repositoryType){
@@ -28,7 +28,7 @@ public class Repository implements AutoCloseable{
 
     public static Repository getInstance(String dataBaseName, RepositoryType repositoryType){
         List<Repository> repository = generalRepositores.stream()
-                .filter(generalRepository -> generalRepository.getDataBaseName()  == dataBaseName && generalRepository.repositoryType == repositoryType).toList();
+                .filter(generalRepository -> Objects.equals(generalRepository.getDataBaseName(), dataBaseName) && generalRepository.repositoryType == repositoryType).toList();
         if(repository.size() > 0){
             return repository.get(0);
         }
@@ -36,6 +36,17 @@ public class Repository implements AutoCloseable{
         generalRepositores.add(newRepo);
         System.out.println(newRepo);
         return newRepo;
+    }
+
+    public <T> void persistMultipleEntites(T[] entites){
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tr = em.getTransaction();
+        tr.begin();
+        for (T entite : entites) {
+            em.persist(entite);
+        }
+        tr.commit();
+        em.close();
     }
 
     public <T> void persistEntity(T entity){

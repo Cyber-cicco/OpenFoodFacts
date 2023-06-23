@@ -1,6 +1,5 @@
 package fr.diginamic.dao;
 
-import fr.diginamic.config.DatabaseConfig;
 import fr.diginamic.entites.Categorie;
 import fr.diginamic.types.RepositoryType;
 
@@ -20,5 +19,10 @@ public class CategorieDaoImpl extends RepositoryDao implements CategorieDao {
     @Override
     public void sauvegarder(Categorie entity) {
         repository.persistEntity(entity);
+    }
+
+    @Override
+    public void sauvegarderMultipe(Categorie[] entites) {
+        repository.persistMultipleEntites(entites);
     }
 }

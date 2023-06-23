@@ -1,6 +1,5 @@
 package fr.diginamic.dao;
 
-import fr.diginamic.config.DatabaseConfig;
 import fr.diginamic.entites.Allergene;
 import fr.diginamic.types.RepositoryType;
 
@@ -19,5 +18,10 @@ public class AllergeneDaoImpl extends RepositoryDao implements AllergeneDao{
     @Override
     public void sauvegarder(Allergene entity) {
         repository.persistEntity(entity);
+    }
+
+    @Override
+    public void sauvegarderMultipe(Allergene[] entites) {
+        repository.persistMultipleEntites(entites);
     }
 }

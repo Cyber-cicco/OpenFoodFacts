@@ -23,6 +23,11 @@ public class ProduitDaoImpl extends RepositoryDao implements ProduitDao {
         repository.persistEntity(entity);
     }
 
+    @Override
+    public void sauvegarderMultipe(Produit[] entites) {
+        repository.persistMultipleEntites(entites);
+    }
+
     public void extraireNMeilleursParMarque(int n){
         String query = "select p from Produit p where p.valeurNutritionnelle = 0 and p.marque.nom = 'chabrior'";
         Map<String, String> args = new HashMap<>();
