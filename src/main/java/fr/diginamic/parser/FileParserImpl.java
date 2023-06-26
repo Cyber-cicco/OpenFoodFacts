@@ -5,8 +5,6 @@ import fr.diginamic.token.FileTokeniserImpl;
 import fr.diginamic.token.LineTokeniser;
 import lombok.SneakyThrows;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,7 +12,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 /**
- * Classe permettant d'utiliser des threads pour transformer le
+ * Classe permettant d'utiliser des THREADS pour transformer le
  * contenu du fichier en données pour la BDD
  * */
 public class FileParserImpl implements FileParser {
@@ -41,7 +39,7 @@ public class FileParserImpl implements FileParser {
      * */
     @SneakyThrows
     @Override
-    public void readCsv() throws URISyntaxException, IOException {
+    public void readCsv() {
         //récupération du fichier dans les ressources
         Path path = Paths.get(Objects.requireNonNull(getClass().getClassLoader()
                         .getResource("open-food-facts.csv"))
@@ -61,7 +59,7 @@ public class FileParserImpl implements FileParser {
                 for(int i = fileTokeniser.tokens.length/2; i < fileTokeniser.tokens.length; ++i){
                     lineParser2.parseLine(fileTokeniser.tokens[i], i);
                 }});
-            //On attend la fin de l'exécution des threads
+            //On attend la fin de l'exécution des THREADS
             firstHalf.join();
             secondHalf.join();
         }

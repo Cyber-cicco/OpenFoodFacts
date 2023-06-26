@@ -10,7 +10,7 @@ public interface BaseDao<T extends BaseEntity> {
 
     void sauvegarder(T entity);
 
-    void sauvegarderMultipe(T[] entites);
+    void sauvegarderMultipe(List<T> entites);
 
     void close();
 }

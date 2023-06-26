@@ -1,12 +1,12 @@
 package fr.diginamic.parser;
 
+import fr.diginamic.config.DatabaseConfig;
 import fr.diginamic.dao.*;
 import fr.diginamic.entites.*;
-import fr.diginamic.threader.VirtualThread;
 import fr.diginamic.token.SyntaxKind;
 import fr.diginamic.token.SyntaxToken;
 import fr.diginamic.types.ValeurNutritionnelle;
-import static fr.diginamic.parser.Cache.*;
+
 import static fr.diginamic.config.CSVParams.EXPECTED_SEPARATORS;
 import lombok.SneakyThrows;
 
@@ -23,11 +23,19 @@ public class LineParserImpl implements LineParser{
     private SyntaxToken[] tokens;
     /**Produit à insérer en base à la fin du parcours de la ligne*/
     private Produit produit;
+    private int produitCount;
     /**Index actuel du token parcouru dans la ligne*/
     private int tokenIndex;
-    /**Liste des threads initialisées pour insérer les entités en base*/
-    private final List<Thread> threads = new ArrayList<>();
+    /**Liste des THREADS initialisées pour insérer les entités en base*/
+    private boolean hasToPersist;
+    public final static List<Thread> THREADS = new ArrayList<>();
 
+    protected List<Categorie> categories = new ArrayList<>(DatabaseConfig.MAX_PERSISTENCE);
+    protected List<Allergene> allergenes = new ArrayList<>(DatabaseConfig.MAX_PERSISTENCE);
+    protected List<Marque> marques = new ArrayList<>(DatabaseConfig.MAX_PERSISTENCE);
+    protected List<Ingredient> ingredients = new ArrayList<>(DatabaseConfig.MAX_PERSISTENCE);
+    protected List<Additif> additifs = new ArrayList<>(DatabaseConfig.MAX_PERSISTENCE);
+    protected List<Produit> produits = new ArrayList<>(DatabaseConfig.MAX_PERSISTENCE);
     /**Classe permettant d'insérer une catégorie en base*/
     private final CategorieDao categorieDao = DaoFactory.getCategorieDao();
     /**Classe permettant d'insérer un allergène en base*/
@@ -40,112 +48,6 @@ public class LineParserImpl implements LineParser{
     private final AdditifDao additifDao = DaoFactory.getAdditifDao();
     /**Classe permettant d'insérer un produit en base*/
     private final ProduitDao produitDao = DaoFactory.getProduitDao();
-    /**
-     * Méthode qui va vérifier si une catégorie existe déjà dans le cache
-     * Si c'est le cas, renvoie une catégorie associée au nom que l'on
-     * a passé en paramètre.
-     * Sinon, on crée une nouvelle catégore à partir de son nom,
-     * et on l'insère dans le cache, puis en base.
-     * @param nomCategorie : le nom de la catégorie
-     * @return Categorie
-     * */
-    @SneakyThrows
-    private Categorie getCategorie(String nomCategorie){
-        if(categorieMap.containsKey(nomCategorie)){
-            return categorieMap.get(nomCategorie);
-        }
-        Categorie categorie = new Categorie(nomCategorie);
-        categorieMap.put(nomCategorie, categorie);
-        //categorieDao.sauvegarder(categorie);
-        Thread thread = VirtualThread.getThread("persistence Catégorie", ()->categorieDao.sauvegarder(categorie));
-        threads.add(thread);
-        return categorie;
-    }
-
-    /**
-     * Méthode qui va vérifier si un allergène existe déjà dans le cache
-     * Si c'est le cas, renvoie un allergène associé au nom que l'on
-     * a passé en paramètre.
-     * Sinon, on crée un nouvel allergène à partir de son nom,
-     * et on l'insère dans le cache, puis en base.
-     * @param nomAllergene : nom de l'allergene
-     * @return Allergene
-     * */
-    @SneakyThrows
-    private Allergene getAllergene(String nomAllergene){
-        if(allergeneMap.containsKey(nomAllergene)){
-            return allergeneMap.get(nomAllergene);
-        }
-        Allergene allergene = new Allergene(nomAllergene);
-        allergeneMap.put(nomAllergene, allergene);
-        //allergeneDao.sauvegarder(allergene);
-        Thread thread = VirtualThread.getThread("persistence Allergene", ()->{allergeneDao.sauvegarder(allergene);});
-        threads.add(thread);
-        return allergene;
-    }
-
-    /**
-     * Méthode qui va vérifier si une marque existe déjà dans le cache
-     * Si c'est le cas, renvoie une marque associée au nom que l'on
-     * a passé en paramètre.
-     * Sinon, on crée une nouvelle marque à partir de son nom,
-     * et on l'insère dans le cache, puis en base.
-     * @param nomMarque : nom de la marque
-     * @return Marque
-     * */
-    private Marque getMarque(String nomMarque){
-        if(marqueMap.containsKey(nomMarque)){
-            return marqueMap.get(nomMarque);
-        }
-        Marque marque = new Marque(nomMarque);
-        marqueMap.put(nomMarque, marque);
-        //marqueDao.sauvegarder(marque);
-        Thread thread = VirtualThread.getThread("persistence Marque", ()->marqueDao.sauvegarder(marque));
-        threads.add(thread);
-        return marque;
-    }
-
-    /**
-     * Méthode qui va vérifier si un ingrédient existe déjà dans le cache
-     * Si c'est le cas, renvoie un ingrédient associé au nom que l'on
-     * a passé en paramètre.
-     * Sinon, on crée un nouvel ingrédient à partir de son nom,
-     * et on l'insère dans le cache, puis en base.
-     * @param nomIngredient : nom de l'ingrédient
-     * @return Ingredient
-     * */
-    private Ingredient getIngredient(String nomIngredient){
-        if(ingredientMap.containsKey(nomIngredient)){
-            return ingredientMap.get(nomIngredient);
-        }
-        Ingredient ingredient = new Ingredient(nomIngredient);
-        ingredientMap.put(nomIngredient, ingredient);
-        //ingredientDao.sauvegarder(ingredient);
-        Thread thread = VirtualThread.getThread("persistence Ingredient", ()->ingredientDao.sauvegarder(ingredient));
-        threads.add(thread);
-        return ingredient;
-    }
-    /**
-     * Méthode qui va vérifier si un additif existe déjà dans le cache
-     * Si c'est le cas, renvoie un additif associé au code que l'on
-     * a passé en paramètre.
-     * Sinon, on crée un nouvel additif à partir de son nom et de son code,
-     * et on l'insère dans le cache, puis en base.
-     * @param code : code unique de l'additif
-     * @param nom : nom de l'additif
-     * @return Additif
-     * */
-    private Additif getAdditif(String code, String nom) {
-        if(additifMap.containsKey(code)){
-            return additifMap.get(code);
-        }
-        Additif additif = new Additif(code, nom);
-        additifMap.put(code, additif);
-        //additifDao.sauvegarder(additif);
-        Thread thread = VirtualThread.getThread("persistence Additif", ()->additifDao.sauvegarder(additif));
-        threads.add(thread);
-        return additif;
-    }
 
     /**
      * Méthode permettant de gérer tous les fields du produit finissant par 100g
@@ -153,14 +55,14 @@ public class LineParserImpl implements LineParser{
      * @param lineNumber: permet de diagnostiquer les erreurs de parsing de nombre
      * */
     private void set100g(Consumer<String> setter,int lineNumber){
-        String _100g = "";
+        StringBuilder _100g = new StringBuilder();
         while (tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR){
-            _100g += tokens[tokenIndex].getText();
+            _100g.append(tokens[tokenIndex].getText());
             nextToken();
         }
-        if(!_100g.isEmpty()){
+        if(_100g.length() > 0){
             try{
-                setter.accept(_100g);
+                setter.accept(_100g.toString());
             } catch (NumberFormatException e){
                 System.out.println("Erreur de parsing de nombre à la ligne " + lineNumber);
             }
@@ -182,15 +84,15 @@ public class LineParserImpl implements LineParser{
      * l'insérer en base.
      * */
     private void createCategorie(){
-        String nomCategorie = "";
+        StringBuilder nomCategorie = new StringBuilder();
         //boucle jusqu'au premier pour récupérer le nom d'une catégorie
         while (tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR){
-            nomCategorie += tokens[tokenIndex].getText();
+            nomCategorie.append(tokens[tokenIndex].getText());
 
             nextToken();
 
         }
-        produit.setCategorie(getCategorie(nomCategorie));
+        produit.setCategorie(categorieDao.getCategorie(nomCategorie.toString(), hasToPersist, categories));
     }
 
     /**
@@ -199,14 +101,14 @@ public class LineParserImpl implements LineParser{
      * l'insérer en base.
      * */
     private void createMarque(){
-        String nomMarque = "";
+        StringBuilder nomMarque = new StringBuilder();
         while (tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR){
-            nomMarque += tokens[tokenIndex].getText();
+            nomMarque.append(tokens[tokenIndex].getText());
 
             nextToken();
 
         }
-        produit.setMarque(getMarque(nomMarque));
+        produit.setMarque(marqueDao.getMarque(nomMarque.toString(), hasToPersist, marques));
     }
 
     /**
@@ -214,14 +116,14 @@ public class LineParserImpl implements LineParser{
      * et le set dans le produit
      * */
     private void setNomProduit(){
-        String nomProduit = "";
+        StringBuilder nomProduit = new StringBuilder();
         while (tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR){
-            nomProduit += tokens[tokenIndex].getText();
+            nomProduit.append(tokens[tokenIndex].getText());
 
             nextToken();
 
         }
-        produit.setNom(nomProduit);
+        produit.setNom(nomProduit.toString());
     }
 
     /**
@@ -286,7 +188,7 @@ public class LineParserImpl implements LineParser{
         int expectedPipeNumber = getExpectedPipeNumber();
         while (pipeCount != expectedPipeNumber){
             //initialisation du nom de l'ingrédient à insérer dans une chaine vide
-            String nomIngredient = "";
+            StringBuilder nomIngredient = new StringBuilder();
             //Tant que l'on ne rencontre pas un token identifié comme séparateur d'ingrédients...
             while (tokens[tokenIndex].getKind() != SyntaxKind.ENTITY_SEPARATOR &&
                     tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR &&
@@ -296,22 +198,22 @@ public class LineParserImpl implements LineParser{
                 if(tokens[tokenIndex].getKind() == SyntaxKind.WHITESPACE_TOKEN ||
                         tokens[tokenIndex].getKind() == SyntaxKind.ENTITY_FIELD){
                     //...on ajoute le contenu du token au nom de l'ingrédient...
-                    nomIngredient += tokens[tokenIndex].getText();
+                    nomIngredient.append(tokens[tokenIndex].getText());
                 }
                 //...mais si le token est égal à :...
                 if(tokens[tokenIndex].getKind() == SyntaxKind.DESCRIPTOR){
                     //...alors ce que nous avons mis dans le nom de l'ingrédient ne faisait que décrire
                     //le type de l'ingrédient, et on réinitialise la chaine à un caractère vide.
-                    nomIngredient = "";
+                    nomIngredient = new StringBuilder();
                 }
 
                 nextToken();
 
             }
             //On enlève les espaces au début et à la fin du nom de l'ingrédient...
-            nomIngredient = nomIngredient.trim();
+            nomIngredient = new StringBuilder(nomIngredient.toString().trim());
             //Et si le nom de l'ingrédient n'est pas vide, on rajoute l'ingrédient au produit
-            if(!nomIngredient.isBlank()) produit.addIngredient(getIngredient(nomIngredient));
+            if(!nomIngredient.toString().isBlank()) produit.addIngredient(ingredientDao.getIngredient(nomIngredient.toString(), hasToPersist, ingredients));
             //Dans certains cas, un séparateur est directement suivie d'un Séparateur CSV. Dans ce cas,
             //on sort de la boucle.
             if(tokens[tokenIndex].getKind() == SyntaxKind.CSV_SEPARATOR){
@@ -342,17 +244,17 @@ public class LineParserImpl implements LineParser{
      * */
     private void createAllergene(){
         while (tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR){
-            String nomAllergene = "";
+            StringBuilder nomAllergene = new StringBuilder();
             while (tokens[tokenIndex].getKind() != SyntaxKind.ENTITY_SEPARATOR &&
                     tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR){
                 if(tokens[tokenIndex].getKind() == SyntaxKind.WHITESPACE_TOKEN ||
                         tokens[tokenIndex].getKind() == SyntaxKind.ENTITY_FIELD ||
                         tokens[tokenIndex].getKind() == SyntaxKind.DESCRIPTOR){
-                    nomAllergene += tokens[tokenIndex].getText();
+                    nomAllergene.append(tokens[tokenIndex].getText());
                 }
                 tokenIndex++;
             }
-            produit.addAllergene(getAllergene(nomAllergene.trim()));
+            produit.addAllergene(allergeneDao.getAllergene(nomAllergene.toString().trim(), hasToPersist, allergenes));
             if(tokens[tokenIndex].getKind() == SyntaxKind.CSV_SEPARATOR){
                 break;
             }
@@ -370,12 +272,12 @@ public class LineParserImpl implements LineParser{
     private void createAdditif(){
         while (tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR){
             //initialisation du code de l'additif
-            String codeAdditif = "";
+            StringBuilder codeAdditif = new StringBuilder();
             //Le MINUS-TOKEN est dans le cas de l'additif vu comme un séparateur entre
             //le code et le nom
             while (tokens[tokenIndex].getKind() != SyntaxKind.MINUS_TOKEN &&
                     tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR){
-                codeAdditif += tokens[tokenIndex].getText();
+                codeAdditif.append(tokens[tokenIndex].getText());
 
                 nextToken();
 
@@ -384,15 +286,15 @@ public class LineParserImpl implements LineParser{
             nextToken();
 
             //initilisation du nom de l'additif
-            String nomAdditif = "";
+            StringBuilder nomAdditif = new StringBuilder();
             while (tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR &&
                     tokens[tokenIndex].getKind() != SyntaxKind.ENTITY_SEPARATOR ){
-                nomAdditif += tokens[tokenIndex].getText();
+                nomAdditif.append(tokens[tokenIndex].getText());
 
                 nextToken();
 
             }
-            produit.addAdditif(getAdditif(codeAdditif.trim(), nomAdditif.trim()));
+            produit.addAdditif(additifDao.getAdditif(codeAdditif.toString().trim(), nomAdditif.toString().trim(), hasToPersist, additifs));
             if(tokens[tokenIndex].getKind() == SyntaxKind.CSV_SEPARATOR){
                 break;
             }
@@ -410,8 +312,10 @@ public class LineParserImpl implements LineParser{
      * @param tokens : les tokens de l'objet
      * */
     private void initializeParsing(SyntaxToken[] tokens){
+        produitCount = (produitCount == DatabaseConfig.MAX_PERSISTENCE) ? 0 : produitCount + 1;
         this.tokens = tokens;
         produit = new Produit();
+        hasToPersist = produitCount == DatabaseConfig.MAX_PERSISTENCE;
         tokenIndex = 0;
     }
 
@@ -473,15 +377,15 @@ public class LineParserImpl implements LineParser{
         nextToken();
         //création des additifs.
         createAdditif();
-        //On attend que tous les threads d'insertions en base des entités associées au produit soient terminés.
-        for(int k = 0; k < threads.size(); k++){
-            threads.get(k).join();
+        //On attend que tous les THREADS d'insertions en base des entités associées au produit soient terminés.
+        for (Thread thread : THREADS) {
+            thread.join();
         }
-        //On réinitialise les threads à 0.
-        threads.clear();
+        //On réinitialise les THREADS à 0.
+        THREADS.clear();
         if(lineNumber%100 == 0) System.out.println("Parsing de la ligne : " + lineNumber);
         //Enfin, on sauvegarde le produit.
-        produitDao.sauvegarder(produit);
+        produitDao.prepareProduitForPersistence(produit, hasToPersist, produits);
     }
 
     /**

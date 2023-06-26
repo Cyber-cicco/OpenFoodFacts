@@ -38,9 +38,11 @@ public class Repository implements AutoCloseable{
         return newRepo;
     }
 
-    public <T> void persistMultipleEntites(T[] entites){
+    public <T> void persistMultipleEntites(List<T> entites){
         EntityManager em = emf.createEntityManager();
         EntityTransaction tr = em.getTransaction();
+        System.out.println("persisting mutlpioiea eneites");
+        System.out.println(entites);
         tr.begin();
         for (T entite : entites) {
             em.persist(entite);

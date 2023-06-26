@@ -1,11 +1,14 @@
 package fr.diginamic.dao;
 
 import fr.diginamic.entites.Marque;
+import fr.diginamic.types.Procedure;
 import fr.diginamic.types.RepositoryType;
 
 import java.util.List;
 
-public class MarqueDaoImpl extends RepositoryDao implements MarqueDao{
+import static fr.diginamic.parser.Cache.marqueMap;
+
+public class MarqueDaoImpl extends RepositoryDao<Marque> implements MarqueDao{
 
     public MarqueDaoImpl() {
         super(RepositoryType.MARQUE);
@@ -21,7 +24,28 @@ public class MarqueDaoImpl extends RepositoryDao implements MarqueDao{
     }
 
     @Override
-    public void sauvegarderMultipe(Marque[] entites) {
+    public void sauvegarderMultipe(List<Marque> entites) {
         repository.persistMultipleEntites(entites);
+    }
+
+    /**
+     * Méthode qui va vérifier si une marque existe déjà dans le cache
+     * Si c'est le cas, renvoie une marque associée au nom que l'on
+     * a passé en paramètre.
+     * Sinon, on crée une nouvelle marque à partir de son nom,
+     * et on l'insère dans le cache, puis en base.
+     * @param nomMarque : nom de la marque
+     * @return Marque
+     * */
+    public Marque getMarque(String nomMarque, boolean hasToPersist, List<Marque> marques){
+        if(marqueMap.containsKey(nomMarque)){
+            return marqueMap.get(nomMarque);
+        }
+        Procedure<Marque> constructor = ()->{
+            Marque marque = new Marque(nomMarque);
+            marqueMap.put(nomMarque, marque);
+            return marque;
+        };
+        return getEntity(constructor, hasToPersist, marques);
     }
 }
