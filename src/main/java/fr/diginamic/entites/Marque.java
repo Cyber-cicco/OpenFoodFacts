@@ -25,4 +25,9 @@ public class Marque extends BaseEntity {
                 "nom='" + nom + '\'' +
                 '}';
     }
+
+    @Override
+    public String getCacheId() {
+        return nom;
+    }
 }

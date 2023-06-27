@@ -8,6 +8,8 @@ import fr.diginamic.token.SyntaxToken;
 import fr.diginamic.types.ValeurNutritionnelle;
 
 import static fr.diginamic.config.CSVParams.EXPECTED_SEPARATORS;
+import static fr.diginamic.config.CSVParams.MAX_LINES;
+
 import lombok.SneakyThrows;
 
 import java.util.*;
@@ -28,14 +30,14 @@ public class LineParserImpl implements LineParser{
     private int tokenIndex;
     /**Liste des THREADS initialisées pour insérer les entités en base*/
     private boolean hasToPersist;
-    public final static List<Thread> THREADS = new ArrayList<>();
+    private final List<Thread> threads = new ArrayList<>();
 
-    protected List<Categorie> categories = new ArrayList<>(DatabaseConfig.MAX_PERSISTENCE);
-    protected List<Allergene> allergenes = new ArrayList<>(DatabaseConfig.MAX_PERSISTENCE);
-    protected List<Marque> marques = new ArrayList<>(DatabaseConfig.MAX_PERSISTENCE);
-    protected List<Ingredient> ingredients = new ArrayList<>(DatabaseConfig.MAX_PERSISTENCE);
-    protected List<Additif> additifs = new ArrayList<>(DatabaseConfig.MAX_PERSISTENCE);
-    protected List<Produit> produits = new ArrayList<>(DatabaseConfig.MAX_PERSISTENCE);
+    protected Set<Categorie> categories = new HashSet<>();
+    protected Set<Allergene> allergenes = new HashSet<>();
+    protected Set<Marque> marques = new HashSet<>();
+    protected Set<Ingredient> ingredients = new HashSet<>();
+    protected Set<Additif> additifs = new HashSet<>();
+    protected List<Produit> produits = new ArrayList<>();
     /**Classe permettant d'insérer une catégorie en base*/
     private final CategorieDao categorieDao = DaoFactory.getCategorieDao();
     /**Classe permettant d'insérer un allergène en base*/
@@ -92,7 +94,8 @@ public class LineParserImpl implements LineParser{
             nextToken();
 
         }
-        produit.setCategorie(categorieDao.getCategorie(nomCategorie.toString(), hasToPersist, categories));
+        produit.setCategorie(categorieDao.getCategorie(nomCategorie.toString(), categories));
+        if(hasToPersist) categorieDao.persistEntities(categories, threads);
     }
 
     /**
@@ -109,6 +112,7 @@ public class LineParserImpl implements LineParser{
 
         }
         produit.setMarque(marqueDao.getMarque(nomMarque.toString(), hasToPersist, marques));
+        if(hasToPersist) marqueDao.persistEntities(marques, threads);
     }
 
     /**
@@ -213,7 +217,7 @@ public class LineParserImpl implements LineParser{
             //On enlève les espaces au début et à la fin du nom de l'ingrédient...
             nomIngredient = new StringBuilder(nomIngredient.toString().trim());
             //Et si le nom de l'ingrédient n'est pas vide, on rajoute l'ingrédient au produit
-            if(!nomIngredient.toString().isBlank()) produit.addIngredient(ingredientDao.getIngredient(nomIngredient.toString(), hasToPersist, ingredients));
+            if(!nomIngredient.toString().isBlank()) produit.addIngredient(ingredientDao.getIngredient(nomIngredient.toString(), ingredients));
             //Dans certains cas, un séparateur est directement suivie d'un Séparateur CSV. Dans ce cas,
             //on sort de la boucle.
             if(tokens[tokenIndex].getKind() == SyntaxKind.CSV_SEPARATOR){
@@ -235,6 +239,7 @@ public class LineParserImpl implements LineParser{
             //Si notre nouveau token est un séparateur CSV, on incrémente le nombre de séparateur CSV rencontrés.
             if(tokens[tokenIndex].getKind() == SyntaxKind.CSV_SEPARATOR) pipeCount++;
         }
+        if(hasToPersist) ingredientDao.persistEntities(ingredients, threads);
     }
 
     /**
@@ -254,13 +259,16 @@ public class LineParserImpl implements LineParser{
                 }
                 tokenIndex++;
             }
-            produit.addAllergene(allergeneDao.getAllergene(nomAllergene.toString().trim(), hasToPersist, allergenes));
+            if(!nomAllergene.toString().isBlank())produit.addAllergene(allergeneDao.getAllergene(nomAllergene.toString().trim(), allergenes));
             if(tokens[tokenIndex].getKind() == SyntaxKind.CSV_SEPARATOR){
                 break;
             }
 
             nextToken();
 
+        }
+        if(hasToPersist){
+            allergeneDao.persistEntities(allergenes, threads);
         }
     }
 
@@ -294,7 +302,7 @@ public class LineParserImpl implements LineParser{
                 nextToken();
 
             }
-            produit.addAdditif(additifDao.getAdditif(codeAdditif.toString().trim(), nomAdditif.toString().trim(), hasToPersist, additifs));
+            produit.addAdditif(additifDao.getAdditif(codeAdditif.toString().trim(), nomAdditif.toString().trim(), additifs));
             if(tokens[tokenIndex].getKind() == SyntaxKind.CSV_SEPARATOR){
                 break;
             }
@@ -302,6 +310,7 @@ public class LineParserImpl implements LineParser{
             nextToken();
 
         }
+        if(hasToPersist) additifDao.persistEntities(additifs, threads);
     }
 
     /**
@@ -315,7 +324,7 @@ public class LineParserImpl implements LineParser{
         produitCount = (produitCount == DatabaseConfig.MAX_PERSISTENCE) ? 0 : produitCount + 1;
         this.tokens = tokens;
         produit = new Produit();
-        hasToPersist = produitCount == DatabaseConfig.MAX_PERSISTENCE;
+        hasToPersist = produitCount == DatabaseConfig.MAX_PERSISTENCE || produitCount == MAX_LINES-1;
         tokenIndex = 0;
     }
 
@@ -378,14 +387,18 @@ public class LineParserImpl implements LineParser{
         //création des additifs.
         createAdditif();
         //On attend que tous les THREADS d'insertions en base des entités associées au produit soient terminés.
-        for (Thread thread : THREADS) {
+        for (Thread thread : threads) {
             thread.join();
         }
         //On réinitialise les THREADS à 0.
-        THREADS.clear();
+        threads.clear();
         if(lineNumber%100 == 0) System.out.println("Parsing de la ligne : " + lineNumber);
         //Enfin, on sauvegarde le produit.
-        produitDao.prepareProduitForPersistence(produit, hasToPersist, produits);
+        produits.add(produit);
+        if(hasToPersist){
+            produitDao.sauvegarderMultipe(produits);
+            produits.clear();
+        }
     }
 
     /**
@@ -393,6 +406,7 @@ public class LineParserImpl implements LineParser{
      * les connexions à la base de données.
      * */
     public void closeDaos(){
+        System.out.println(produitCount);
         additifDao.close();
         allergeneDao.close();
         ingredientDao.close();

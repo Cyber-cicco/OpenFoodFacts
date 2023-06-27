@@ -27,4 +27,9 @@ public class Categorie extends BaseEntity {
     public Categorie(String libelle) {
         this.libelle = libelle;
     }
+
+    @Override
+    public String getCacheId() {
+        return libelle;
+    }
 }

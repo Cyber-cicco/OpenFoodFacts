@@ -1,10 +1,11 @@
 package fr.diginamic.dao;
 
 import fr.diginamic.entites.Allergene;
-import fr.diginamic.types.Procedure;
+import fr.diginamic.types.Producer;
 import fr.diginamic.types.RepositoryType;
 
 import java.util.List;
+import java.util.Set;
 
 import static fr.diginamic.parser.Cache.allergeneMap;
 
@@ -37,15 +38,13 @@ public class AllergeneDaoImpl extends RepositoryDao<Allergene> implements Allerg
      * @param nomAllergene : nom de l'allergene
      * @return Allergene
      * */
-    public Allergene getAllergene(String nomAllergene, boolean hasToPersist, List<Allergene> allergenes){
-        if(allergeneMap.containsKey(nomAllergene)){
-            return allergeneMap.get(nomAllergene);
-        }
-        Procedure<Allergene> constructor = ()->{
-            Allergene allergene = new Allergene(nomAllergene);
+    public Allergene getAllergene(String nomAllergene, Set<Allergene> allergenes){
+        boolean containsKey = allergeneMap.containsKey(nomAllergene);
+        Allergene allergene = (containsKey) ? allergeneMap.get(nomAllergene) : new Allergene(nomAllergene);
+        if(!containsKey){
             allergeneMap.put(nomAllergene, allergene);
-            return allergene;
-        };
-        return getEntity(constructor, hasToPersist, allergenes);
+            allergenes.add(allergene);
+        }
+        return allergene;
     }
 }

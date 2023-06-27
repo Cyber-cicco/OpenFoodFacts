@@ -6,6 +6,7 @@ import fr.diginamic.types.RepositoryType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ProduitDaoImpl extends RepositoryDao<Produit> implements ProduitDao {
 
@@ -36,18 +37,9 @@ public class ProduitDaoImpl extends RepositoryDao<Produit> implements ProduitDao
         System.out.println(repository.executeQuery(query, args, n));
     }
 
-    public void prepareProduitForPersistence(Produit produit, boolean hasToPersist, List<Produit> entites){
-        if(hasToPersist){
-            System.out.println("sauvegarde des produits");
-            sauvegarderMultipe(entites);
-            entites.clear();
-            produitCount = 0;
-        }
-        entites.add(produit);
-    }
-
     @Override
     public int getProduitCount() {
         return produitCount;
     }
+
 }

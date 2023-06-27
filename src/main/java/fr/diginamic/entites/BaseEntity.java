@@ -7,4 +7,6 @@ import jakarta.persistence.Id;
 
 public abstract class BaseEntity {
 
+    public abstract String getCacheId();
+
 }

@@ -1,11 +1,11 @@
 package fr.diginamic.dao;
 
 import fr.diginamic.entites.Categorie;
-import fr.diginamic.types.Procedure;
 import fr.diginamic.types.RepositoryType;
 import lombok.SneakyThrows;
 
 import java.util.List;
+import java.util.Set;
 
 import static fr.diginamic.parser.Cache.categorieMap;
 
@@ -41,15 +41,13 @@ public class CategorieDaoImpl extends RepositoryDao<Categorie> implements Catego
      * @return Categorie
      * */
     @SneakyThrows
-    public Categorie getCategorie(String nomCategorie, boolean hasToPersist, List<Categorie> categories){
-        if(categorieMap.containsKey(nomCategorie)){
-            return categorieMap.get(nomCategorie);
-        }
-        Procedure<Categorie> constructor = ()->{
-            Categorie categorie = new Categorie(nomCategorie);
+    public Categorie getCategorie(String nomCategorie, Set<Categorie> categories){
+        boolean containsKey = categorieMap.containsKey(nomCategorie);
+        Categorie categorie = (containsKey) ? categorieMap.get(nomCategorie) : new Categorie(nomCategorie);
+        if(!containsKey){
             categorieMap.put(nomCategorie, categorie);
-            return categorie;
-        };
-        return getEntity(constructor, hasToPersist, categories);
+            categories.add(categorie);
+        }
+        return categorie;
     }
 }

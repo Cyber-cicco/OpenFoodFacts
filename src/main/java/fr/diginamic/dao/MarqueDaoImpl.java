@@ -1,10 +1,11 @@
 package fr.diginamic.dao;
 
 import fr.diginamic.entites.Marque;
-import fr.diginamic.types.Procedure;
+import fr.diginamic.types.Producer;
 import fr.diginamic.types.RepositoryType;
 
 import java.util.List;
+import java.util.Set;
 
 import static fr.diginamic.parser.Cache.marqueMap;
 
@@ -37,15 +38,13 @@ public class MarqueDaoImpl extends RepositoryDao<Marque> implements MarqueDao{
      * @param nomMarque : nom de la marque
      * @return Marque
      * */
-    public Marque getMarque(String nomMarque, boolean hasToPersist, List<Marque> marques){
-        if(marqueMap.containsKey(nomMarque)){
-            return marqueMap.get(nomMarque);
-        }
-        Procedure<Marque> constructor = ()->{
-            Marque marque = new Marque(nomMarque);
+    public Marque getMarque(String nomMarque, boolean hasToPersist, Set<Marque> marques){
+        boolean containsKey = marqueMap.containsKey(nomMarque);
+        Marque marque = (containsKey) ? marqueMap.get(nomMarque) : new Marque(nomMarque);
+        if(!containsKey){
             marqueMap.put(nomMarque, marque);
-            return marque;
-        };
-        return getEntity(constructor, hasToPersist, marques);
+            marques.add(marque);
+        }
+        return marque;
     }
 }

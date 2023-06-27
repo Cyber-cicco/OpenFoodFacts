@@ -20,4 +20,9 @@ public class Allergene extends BaseEntity{
 
     public Allergene() {
     }
+
+    @Override
+    public String getCacheId() {
+        return libelle;
+    }
 }

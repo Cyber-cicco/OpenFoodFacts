@@ -54,17 +54,17 @@ public class FileParserImpl implements FileParser {
                 for(int i = 1; i < fileTokeniser.tokens.length/2; ++i){
                     lineParser.parseLine(fileTokeniser.tokens[i], i);
                 }});
-            //Lancement du parcours de la deuxième moitié du fichier dans un deuxième thread
             Thread secondHalf = VirtualThread.getThread("second", ()->{
                 for(int i = fileTokeniser.tokens.length/2; i < fileTokeniser.tokens.length; ++i){
                     lineParser2.parseLine(fileTokeniser.tokens[i], i);
                 }});
-            //On attend la fin de l'exécution des THREADS
+            //Lancement du parcours de la deuxième moitié du fichier dans un deuxième thread
             firstHalf.join();
             secondHalf.join();
         }
         //On ferme toutes les connexions ouvertes par les DAOS
         lineParser.closeDaos();
+        lineParser2.closeDaos();
     }
 
 }

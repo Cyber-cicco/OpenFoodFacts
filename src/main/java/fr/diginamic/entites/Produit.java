@@ -329,4 +329,9 @@ public class Produit extends BaseEntity{
                 ", presenceHuilePalme=" + presenceHuilePalme +
                 '}';
     }
+
+    @Override
+    public String getCacheId() {
+        return nom;
+    }
 }

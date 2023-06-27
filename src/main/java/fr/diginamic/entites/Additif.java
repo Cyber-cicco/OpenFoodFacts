@@ -29,4 +29,9 @@ public class Additif extends BaseEntity{
                 ", libelle='" + libelle + '\'' +
                 '}';
     }
+
+    @Override
+    public String getCacheId() {
+        return code;
+    }
 }

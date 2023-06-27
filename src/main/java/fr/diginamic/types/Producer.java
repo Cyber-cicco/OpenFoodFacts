@@ -1,5 +1,5 @@
 package fr.diginamic.types;
 
-public interface Procedure<T> {
+public interface Producer<T> {
     T apply();
 }

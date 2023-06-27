@@ -1,10 +1,12 @@
 package fr.diginamic.dao;
 
+import fr.diginamic.entites.Categorie;
 import fr.diginamic.entites.Ingredient;
-import fr.diginamic.types.Procedure;
+import fr.diginamic.types.Producer;
 import fr.diginamic.types.RepositoryType;
 
 import java.util.List;
+import java.util.Set;
 
 import static fr.diginamic.parser.Cache.ingredientMap;
 
@@ -38,15 +40,13 @@ public class IngredientDaoImpl extends RepositoryDao<Ingredient> implements Ingr
      * @param nomIngredient : nom de l'ingrédient
      * @return Ingredient
      * */
-    public Ingredient getIngredient(String nomIngredient, boolean hasToPersist, List<Ingredient> ingredients){
-        if(ingredientMap.containsKey(nomIngredient)){
-            return ingredientMap.get(nomIngredient);
-        }
-        Procedure<Ingredient> constructor = ()->{
-            Ingredient ingredient = new Ingredient(nomIngredient);
+    public Ingredient getIngredient(String nomIngredient, Set<Ingredient> ingredients){
+        boolean containsKey = ingredientMap.containsKey(nomIngredient);
+        Ingredient ingredient = (containsKey) ? ingredientMap.get(nomIngredient) : new Ingredient(nomIngredient);
+        if(!containsKey){
             ingredientMap.put(nomIngredient, ingredient);
-            return ingredient;
-        };
-        return getEntity(constructor, hasToPersist, ingredients);
+            ingredients.add(ingredient);
+        }
+        return ingredient;
     }
 }

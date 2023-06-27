@@ -23,4 +23,9 @@ public class Ingredient extends BaseEntity{
                 ", nom='" + nom + '\'' +
                 '}';
     }
+
+    @Override
+    public String getCacheId() {
+        return nom;
+    }
 }

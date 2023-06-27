@@ -1,10 +1,11 @@
 package fr.diginamic.dao;
 
 import fr.diginamic.entites.Additif;
-import fr.diginamic.types.Procedure;
+import fr.diginamic.types.Producer;
 import fr.diginamic.types.RepositoryType;
 
 import java.util.List;
+import java.util.Set;
 
 import static fr.diginamic.parser.Cache.additifMap;
 
@@ -39,15 +40,13 @@ public class AdditifDaoImpl extends RepositoryDao<Additif> implements AdditifDao
      * @return Additif
      * */
     @Override
-    public Additif getAdditif(String code, String nom, boolean hasToPersist, List<Additif> additifs){
-        if(additifMap.containsKey(code)){
-            return additifMap.get(code);
-        }
-        Procedure<Additif> constructor = ()->{
-            Additif additif = new Additif(code, nom);
+    public Additif getAdditif(String code, String nom, Set<Additif> additifs){
+        boolean containsKey = additifMap.containsKey(code);
+        Additif additif = (containsKey) ? additifMap.get(code) : new Additif(code, nom);
+        if(!containsKey){
             additifMap.put(code, additif);
-            return additif;
-        };
-        return getEntity(constructor, hasToPersist, additifs);
+            additifs.add(additif);
+        }
+        return additif;
     }
 }

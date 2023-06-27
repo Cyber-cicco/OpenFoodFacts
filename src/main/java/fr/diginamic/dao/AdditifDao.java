@@ -2,7 +2,7 @@ package fr.diginamic.dao;
 
 import fr.diginamic.entites.Additif;
 
-import java.util.List;
+import java.util.Set;
 
 public interface AdditifDao extends BaseDao<Additif>{
 
@@ -16,5 +16,5 @@ public interface AdditifDao extends BaseDao<Additif>{
      * @param nom : nom de l'additif
      * @return Additif
      * */
-    Additif getAdditif(String code, String nom, boolean hasToPersist, List<Additif> additifs);
+    Additif getAdditif(String code, String nom, Set<Additif> additifs);
 }
