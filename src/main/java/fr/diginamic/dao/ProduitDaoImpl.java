@@ -6,12 +6,15 @@ import fr.diginamic.types.RepositoryType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class ProduitDaoImpl extends RepositoryDao<Produit> implements ProduitDao {
 
     private int produitCount;
 
+    /**
+     * Constructeur
+     * Initialise la connexion à la base de données en donnant le type produit
+     * */
     public ProduitDaoImpl() {
         super(RepositoryType.PRODUIT);
     }
@@ -23,7 +26,7 @@ public class ProduitDaoImpl extends RepositoryDao<Produit> implements ProduitDao
 
     @Override
     public void sauvegarder(Produit entity) {
-        repository.persistEntity(entity);
+        repository.persistEntityWithNewConnection(entity);
     }
 
     @Override

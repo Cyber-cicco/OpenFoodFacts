@@ -1,7 +1,6 @@
 package fr.diginamic.dao;
 
 import fr.diginamic.entites.Marque;
-import fr.diginamic.types.Producer;
 import fr.diginamic.types.RepositoryType;
 
 import java.util.List;
@@ -11,6 +10,10 @@ import static fr.diginamic.parser.Cache.marqueMap;
 
 public class MarqueDaoImpl extends RepositoryDao<Marque> implements MarqueDao{
 
+    /**
+     * Constructeur
+     * Initialise la connexion à la base de données en donnant le type ingredient
+     * */
     public MarqueDaoImpl() {
         super(RepositoryType.MARQUE);
     }
@@ -21,7 +24,7 @@ public class MarqueDaoImpl extends RepositoryDao<Marque> implements MarqueDao{
 
     @Override
     public void sauvegarder(Marque entity) {
-        repository.persistEntity(entity);
+        repository.persistEntityWithNewConnection(entity);
     }
 
     @Override

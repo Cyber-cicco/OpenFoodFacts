@@ -1,8 +1,6 @@
 package fr.diginamic.dao;
 
-import fr.diginamic.entites.Categorie;
 import fr.diginamic.entites.Ingredient;
-import fr.diginamic.types.Producer;
 import fr.diginamic.types.RepositoryType;
 
 import java.util.List;
@@ -12,6 +10,10 @@ import static fr.diginamic.parser.Cache.ingredientMap;
 
 public class IngredientDaoImpl extends RepositoryDao<Ingredient> implements IngredientDao {
 
+    /**
+     * Constructeur
+     * Initialise la connexion à la base de données en donnant le type ingredient
+     * */
     public IngredientDaoImpl() {
         super(RepositoryType.INGREDIENT);
     }
@@ -23,7 +25,7 @@ public class IngredientDaoImpl extends RepositoryDao<Ingredient> implements Ingr
 
     @Override
     public void sauvegarder(Ingredient entity) {
-        repository.persistEntity(entity);
+        repository.persistEntityWithNewConnection(entity);
     }
 
     @Override

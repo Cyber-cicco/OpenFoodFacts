@@ -11,7 +11,7 @@ public interface AdditifDao extends BaseDao<Additif>{
      * Si c'est le cas, renvoie un additif associé au code que l'on
      * a passé en paramètre.
      * Sinon, on crée un nouvel additif à partir de son nom et de son code,
-     * et on l'insère dans le cache, puis en base.
+     * et on l'insère dans le cache.
      * @param code : code unique de l'additif
      * @param nom : nom de l'additif
      * @return Additif

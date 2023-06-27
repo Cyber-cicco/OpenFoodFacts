@@ -1,5 +1,6 @@
 package fr.diginamic.parser;
 
+import com.sun.jna.platform.win32.WinBase;
 import fr.diginamic.config.DatabaseConfig;
 import fr.diginamic.dao.*;
 import fr.diginamic.entites.*;
@@ -7,7 +8,7 @@ import fr.diginamic.token.SyntaxKind;
 import fr.diginamic.token.SyntaxToken;
 import fr.diginamic.types.ValeurNutritionnelle;
 
-import static fr.diginamic.config.CSVParams.EXPECTED_SEPARATORS;
+import static fr.diginamic.config.CSVParams.EXPECTED_PIPES;
 import static fr.diginamic.config.CSVParams.MAX_LINES;
 
 import lombok.SneakyThrows;
@@ -28,15 +29,28 @@ public class LineParserImpl implements LineParser{
     private int produitCount;
     /**Index actuel du token parcouru dans la ligne*/
     private int tokenIndex;
-    /**Liste des THREADS initialisées pour insérer les entités en base*/
+    /**Nombre de lignes à parcourir dans le fichier*/
+    private int lineCount;
+    /**Nombre de ligne parse*/
+    private int lineParsed;
+    /**
+     * Booléen permettant de préciser si pour le parsing de cette ligne,
+     * on doit enclencher la persistence des entités mises dans les listes
+     **/
     private boolean hasToPersist;
+    /**Liste des Threads initialisées pour insérer les entités en base*/
     private final List<Thread> threads = new ArrayList<>();
-
+    /**Liste des catégories à persister la prochaine fois que hasToPersist sera vrai*/
     protected Set<Categorie> categories = new HashSet<>();
+    /**Liste des allergene à persister la prochaine fois que hasToPersist sera vrai*/
     protected Set<Allergene> allergenes = new HashSet<>();
+    /**Liste des marques à persister la prochaine fois que hasToPersist sera vrai*/
     protected Set<Marque> marques = new HashSet<>();
+    /**Liste des ingredients à persister la prochaine fois que hasToPersist sera vrai*/
     protected Set<Ingredient> ingredients = new HashSet<>();
+    /**Liste des additifs à persister la prochaine fois que hasToPersist sera vrai*/
     protected Set<Additif> additifs = new HashSet<>();
+    /**Liste des produits à persister la prochaine fois que hasToPersist sera vrai*/
     protected List<Produit> produits = new ArrayList<>();
     /**Classe permettant d'insérer une catégorie en base*/
     private final CategorieDao categorieDao = DaoFactory.getCategorieDao();
@@ -90,9 +104,7 @@ public class LineParserImpl implements LineParser{
         //boucle jusqu'au premier pour récupérer le nom d'une catégorie
         while (tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR){
             nomCategorie.append(tokens[tokenIndex].getText());
-
             nextToken();
-
         }
         produit.setCategorie(categorieDao.getCategorie(nomCategorie.toString(), categories));
         if(hasToPersist) categorieDao.persistEntities(categories, threads);
@@ -107,9 +119,7 @@ public class LineParserImpl implements LineParser{
         StringBuilder nomMarque = new StringBuilder();
         while (tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR){
             nomMarque.append(tokens[tokenIndex].getText());
-
             nextToken();
-
         }
         produit.setMarque(marqueDao.getMarque(nomMarque.toString(), hasToPersist, marques));
         if(hasToPersist) marqueDao.persistEntities(marques, threads);
@@ -123,9 +133,7 @@ public class LineParserImpl implements LineParser{
         StringBuilder nomProduit = new StringBuilder();
         while (tokens[tokenIndex].getKind() != SyntaxKind.CSV_SEPARATOR){
             nomProduit.append(tokens[tokenIndex].getText());
-
             nextToken();
-
         }
         produit.setNom(nomProduit.toString());
     }
@@ -171,13 +179,13 @@ public class LineParserImpl implements LineParser{
      * 1.
      * */
     private int getExpectedPipeNumber(){
-        int expectedPipes = 1;
+        int pipes = 1;
         for(int i = 1; i < tokens.length; i++){
             if(peek(i).getKind() == SyntaxKind.CSV_SEPARATOR){
-                ++expectedPipes;
+                ++pipes;
             }
         }
-        return EXPECTED_SEPARATORS - expectedPipes;
+        return pipes - EXPECTED_PIPES;
     }
 
     /**
@@ -234,7 +242,7 @@ public class LineParserImpl implements LineParser{
                     nextToken();
 
                 }
-                //TODO : rajouter un nextToken()
+                nextToken();
             }
             //Si notre nouveau token est un séparateur CSV, on incrémente le nombre de séparateur CSV rencontrés.
             if(tokens[tokenIndex].getKind() == SyntaxKind.CSV_SEPARATOR) pipeCount++;
@@ -270,6 +278,10 @@ public class LineParserImpl implements LineParser{
         if(hasToPersist){
             allergeneDao.persistEntities(allergenes, threads);
         }
+    }
+
+    public void setLineCount(int lineCount) {
+        this.lineCount = lineCount;
     }
 
     /**
@@ -321,10 +333,11 @@ public class LineParserImpl implements LineParser{
      * @param tokens : les tokens de l'objet
      * */
     private void initializeParsing(SyntaxToken[] tokens){
+        lineParsed++;
         produitCount = (produitCount == DatabaseConfig.MAX_PERSISTENCE) ? 0 : produitCount + 1;
         this.tokens = tokens;
         produit = new Produit();
-        hasToPersist = produitCount == DatabaseConfig.MAX_PERSISTENCE || produitCount == MAX_LINES-1;
+        hasToPersist = produitCount == DatabaseConfig.MAX_PERSISTENCE || lineParsed == lineCount;
         tokenIndex = 0;
     }
 

@@ -1,5 +1,8 @@
 package fr.diginamic.dao;
 
+/**
+ * Classe contenant les règles de création de chaque DAO
+ * */
 public class DaoFactory {
 
     private static AdditifDao additifDao;

@@ -8,6 +8,6 @@ import fr.diginamic.token.SyntaxToken;
  * */
 public interface LineParser {
     void parseLine(SyntaxToken[] text, int lineNumber);
-
+    void setLineCount(int lineCount);
     void closeDaos();
 }

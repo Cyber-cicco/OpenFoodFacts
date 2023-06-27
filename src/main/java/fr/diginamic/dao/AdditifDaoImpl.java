@@ -1,7 +1,6 @@
 package fr.diginamic.dao;
 
 import fr.diginamic.entites.Additif;
-import fr.diginamic.types.Producer;
 import fr.diginamic.types.RepositoryType;
 
 import java.util.List;
@@ -9,7 +8,15 @@ import java.util.Set;
 
 import static fr.diginamic.parser.Cache.additifMap;
 
+/**
+ * Classe contenant la logique métier pour interagir avec la table des additifs
+ * dans la base de données
+ * */
 public class AdditifDaoImpl extends RepositoryDao<Additif> implements AdditifDao{
+    /**
+     * Constructeur
+     * Initialise la connexion à la base de données en donnant le type additif
+     * */
     public AdditifDaoImpl() {
         super(RepositoryType.ADDITIF);
     }
@@ -21,7 +28,7 @@ public class AdditifDaoImpl extends RepositoryDao<Additif> implements AdditifDao
 
     @Override
     public void sauvegarder(Additif entity) {
-        repository.persistEntity(entity);
+        repository.persistEntityWithNewConnection(entity);
     }
 
     @Override
@@ -34,7 +41,7 @@ public class AdditifDaoImpl extends RepositoryDao<Additif> implements AdditifDao
      * Si c'est le cas, renvoie un additif associé au code que l'on
      * a passé en paramètre.
      * Sinon, on crée un nouvel additif à partir de son nom et de son code,
-     * et on l'insère dans le cache, puis en base.
+     * et on l'insère dans le cache.
      * @param code : code unique de l'additif
      * @param nom : nom de l'additif
      * @return Additif

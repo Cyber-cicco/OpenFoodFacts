@@ -12,6 +12,10 @@ import static fr.diginamic.parser.Cache.categorieMap;
 public class CategorieDaoImpl extends RepositoryDao<Categorie> implements CategorieDao {
 
 
+    /**
+     * Constructeur
+     * Initialise la connexion à la base de données en donnant le type categorie
+     * */
     public CategorieDaoImpl() {
         super(RepositoryType.CATEGORIE);
     }
@@ -21,11 +25,13 @@ public class CategorieDaoImpl extends RepositoryDao<Categorie> implements Catego
         return null;
     }
 
+    /**Utilise le repository pour sauvegarder une entité*/
     @Override
     public void sauvegarder(Categorie entity) {
-        repository.persistEntity(entity);
+        repository.persistEntityWithNewConnection(entity);
     }
 
+    /**Utilise le repository pour sauvegarder de multiples entités*/
     @Override
     public void sauvegarderMultipe(List<Categorie> entites) {
         repository.persistMultipleEntites(entites);

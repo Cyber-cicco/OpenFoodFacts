@@ -1,7 +1,6 @@
 package fr.diginamic.dao;
 
 import fr.diginamic.entites.Allergene;
-import fr.diginamic.types.Producer;
 import fr.diginamic.types.RepositoryType;
 
 import java.util.List;
@@ -9,8 +8,16 @@ import java.util.Set;
 
 import static fr.diginamic.parser.Cache.allergeneMap;
 
+/**
+ * Classe contenant la logique métier pour interagir avec la table des allergenes
+ * dans la base de données
+ * */
 public class AllergeneDaoImpl extends RepositoryDao<Allergene> implements AllergeneDao{
 
+    /**
+     * Constructeur
+     * Initialise la connexion à la base de données en donnant le type allergene
+     * */
     public AllergeneDaoImpl() {
         super(RepositoryType.ALLERGENE);
     }
@@ -19,11 +26,13 @@ public class AllergeneDaoImpl extends RepositoryDao<Allergene> implements Allerg
         return null;
     }
 
+    /**Utilise le repository pour sauvegarder une entité*/
     @Override
     public void sauvegarder(Allergene entity) {
-        repository.persistEntity(entity);
+        repository.persistEntityWithNewConnection(entity);
     }
 
+    /**Utilise le repository pour sauvegarder de multiples entités*/
     @Override
     public void sauvegarderMultipe(List<Allergene> entites) {
         repository.persistMultipleEntites(entites);

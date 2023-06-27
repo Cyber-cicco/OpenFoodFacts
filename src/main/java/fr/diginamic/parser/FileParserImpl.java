@@ -48,7 +48,8 @@ public class FileParserImpl implements FileParser {
         try(Stream<String> lines = Files.lines(path)){
             //Parcours de toutes les lignes pour récupérer tous les tokens du fichier
             lines.forEach(fileTokeniser::tokenise);
-
+            lineParser.setLineCount((fileTokeniser.tokens.length/2)-1);
+            lineParser2.setLineCount(fileTokeniser.tokens.length/2);
             //Lancement du parcours de la première moitié du fichier dans un premier thread
             Thread firstHalf = VirtualThread.getThread("first", ()->{
                 for(int i = 1; i < fileTokeniser.tokens.length/2; ++i){
