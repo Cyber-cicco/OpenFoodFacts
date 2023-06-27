@@ -1,11 +1,23 @@
 package fr.diginamic.dao;
 
-import fr.diginamic.config.DatabaseConfig;
 import fr.diginamic.entites.Produit;
+import fr.diginamic.types.RepositoryType;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class ProduitDaoImpl extends RepositoryDao implements ProduitDao {
+public class ProduitDaoImpl extends RepositoryDao<Produit> implements ProduitDao {
+
+    private int produitCount;
+
+    /**
+     * Constructeur
+     * Initialise la connexion à la base de données en donnant le type produit
+     * */
+    public ProduitDaoImpl() {
+        super(RepositoryType.PRODUIT);
+    }
 
     @Override
     public List<Produit> extraire() {
@@ -14,6 +26,23 @@ public class ProduitDaoImpl extends RepositoryDao implements ProduitDao {
 
     @Override
     public void sauvegarder(Produit entity) {
-        repository.persistEntity(entity);
+        repository.persistEntityWithNewConnection(entity);
     }
+
+    @Override
+    public void sauvegarderMultipe(List<Produit> entites) {
+        repository.persistMultipleEntites(entites);
+    }
+
+    public void extraireNMeilleursParMarque(int n){
+        String query = "select p from Produit p where p.valeurNutritionnelle = 0 and p.marque.nom = 'chabrior'";
+        Map<String, String> args = new HashMap<>();
+        System.out.println(repository.executeQuery(query, args, n));
+    }
+
+    @Override
+    public int getProduitCount() {
+        return produitCount;
+    }
+
 }

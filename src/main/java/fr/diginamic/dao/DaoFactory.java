@@ -1,5 +1,8 @@
 package fr.diginamic.dao;
 
+/**
+ * Classe contenant les règles de création de chaque DAO
+ * */
 public class DaoFactory {
 
     private static AdditifDao additifDao;
@@ -7,6 +10,7 @@ public class DaoFactory {
     private static CategorieDao categorieDao;
     private static IngredientDao ingredientDao;
     private static ProduitDao produitDao;
+    private static MarqueDao marqueDao;
 
     public static AdditifDao getAdditifDao(){
         if(additifDao != null) return additifDao;
@@ -32,5 +36,10 @@ public class DaoFactory {
         if(produitDao != null) return produitDao;
         produitDao =  new ProduitDaoImpl();
         return produitDao;
+    }
+    public static MarqueDao getMarqueDao(){
+        if(produitDao != null) return marqueDao;
+        marqueDao =  new MarqueDaoImpl();
+        return marqueDao;
     }
 }
