@@ -44,15 +44,35 @@ public class ProduitDaoImpl extends RepositoryDao<Produit> implements ProduitDao
             Map<String, String> args = new HashMap<>();
             args.put("nom", marque);
             if(repository.findByField(query, args).size() == 0){
-                throw new EntityNotFoundException("la marque saisie semble ne pas exister.");
+                throw new EntityNotFoundException("la catégorie saisie semble ne pas exister.");
             }
 
         } catch (EntityNotFoundException e){
             System.out.println("Erreur dans la requête : " + e.getMessage());
         }
-        String query = "select p from Produit p where p.valeurNutritionnelle = 0 and p.marque.nom = :marque order by p.valeurNutritionnelle";
+        String query = "select p from Produit p where p.marque.nom = :marque order by p.valeurNutritionnelle";
         Map<String, String> args = new HashMap<>();
         args.put("marque", marque);
+        return repository.executeQuery(query, args, n);
+    }
+
+    @Override
+    public List<Produit> extraireNMeilleursParCategorie(int n, String categorie) {
+        categorie = categorie.toLowerCase();
+        try{
+            String query = "select c from Categorie c where c.libelle = :libelle";
+            Map<String, String> args = new HashMap<>();
+            args.put("libelle", categorie);
+            if(repository.findByField(query, args).size() == 0){
+                throw new EntityNotFoundException("la catégorie saisie semble ne pas exister.");
+            }
+
+        } catch (EntityNotFoundException e){
+            System.out.println("Erreur dans la requête : " + e.getMessage());
+        }
+        String query = "select p from Produit p where p.categorie.libelle = :categorie order by p.valeurNutritionnelle";
+        Map<String, String> args = new HashMap<>();
+        args.put("categorie", categorie);
         return repository.executeQuery(query, args, n);
     }
 

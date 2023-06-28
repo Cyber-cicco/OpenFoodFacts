@@ -21,9 +21,7 @@ public class Marque extends BaseEntity {
 
     @Override
     public String toString() {
-        return "Marque{" +
-                "nom='" + nom + '\'' +
-                '}';
+        return nom;
     }
 
     @Override

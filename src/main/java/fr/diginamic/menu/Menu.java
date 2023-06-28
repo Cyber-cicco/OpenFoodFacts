@@ -1,10 +1,7 @@
 package fr.diginamic.menu;
 
 
-import fr.diginamic.menu.options.ImportFichier;
-import fr.diginamic.menu.options.MeilleurPourMarque;
-import fr.diginamic.menu.options.Option;
-import fr.diginamic.menu.options.Quitter;
+import fr.diginamic.menu.options.*;
 import fr.diginamic.utils.ScannerManager;
 
 import java.util.*;
@@ -16,7 +13,8 @@ public class Menu {
     public Menu() {
         options.put(1, new ImportFichier());
         options.put(2, new MeilleurPourMarque());
-        options.put(3, new Quitter());
+        options.put(3, new MeilleurPourCategorie());
+        options.put(4, new Quitter());
     }
 
     public void showMenu(){
