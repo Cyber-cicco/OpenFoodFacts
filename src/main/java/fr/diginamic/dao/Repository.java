@@ -3,6 +3,7 @@ package fr.diginamic.dao;
 import fr.diginamic.types.RepositoryType;
 import jakarta.persistence.*;
 
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -115,12 +116,14 @@ public class Repository implements AutoCloseable{
 
     /**
      * Méthode permettant de sélectionner une entité par la valeur d'un field
-     * @param field : le champ de l'entité que l'on rechercje
-     * @param entityName : le nom de l'entité
-     * @param fieldValue : la valeur du champ recherché
+     * @param args : une map contenant les arguments de la requête JPQL et leur valeur;
+     * @param statement : la requête JPQL
      * */
-    public Object findByField(String entityName, String field, String fieldValue){
-        Query query =  em.createQuery(String.format(SELECT_WITH_CONDITION, entityName, field, fieldValue));
+    public <T> List<T> findByField(String statement, Map<String, String> args){
+        Query query =  em.createQuery(statement);
+        for(String key : args.keySet()){
+            query.setParameter(key, args.get(key));
+        }
         return query.getResultList();
     }
 

@@ -1,17 +1,38 @@
 package fr.diginamic.menu;
 
 
+import fr.diginamic.menu.options.ImportFichier;
+import fr.diginamic.menu.options.MeilleurPourMarque;
 import fr.diginamic.menu.options.Option;
+import fr.diginamic.menu.options.Quitter;
+import fr.diginamic.utils.ScannerManager;
 
-import java.util.List;
+import java.util.*;
 
 public class Menu {
-    private List<Option> options;
-
+    private Map<Integer, Option> options = new HashMap<>();
+    private Scanner scanner = ScannerManager.getInstance();
+    private final String PRESENTATION = "OPEN FOOD FACTS";
     public Menu() {
+        options.put(1, new ImportFichier());
+        options.put(2, new MeilleurPourMarque());
+        options.put(3, new Quitter());
     }
 
     public void showMenu(){
-        options.forEach(option -> System.out.println(option.getDisplayedCaption()));
+        String choice;
+        boolean continueMenu = true;
+        while(continueMenu){
+            do{
+                System.out.println(PRESENTATION);
+                for (int i = 1; i <= options.size(); i++){
+                    System.out.println((i) + " : " + options.get(i).getDisplayedCaption());
+                }
+                System.out.println("----------------------");
+                System.out.print("Votre choix : ");
+                choice = scanner.nextLine();
+            } while (!choice.matches("\\d+") || !options.containsKey(Integer.parseInt(choice)));
+            continueMenu = options.get(Integer.parseInt(choice)).executeOption();
+        }
     }
 }

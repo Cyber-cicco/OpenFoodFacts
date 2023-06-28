@@ -38,8 +38,20 @@ public class DaoFactory {
         return produitDao;
     }
     public static MarqueDao getMarqueDao(){
-        if(produitDao != null) return marqueDao;
+        if(marqueDao != null) return marqueDao;
         marqueDao =  new MarqueDaoImpl();
         return marqueDao;
+    }
+    /**
+     * Méthode permettant de fermer
+     * les connexions à la base de données.
+     * */
+    public static void closeDaos(){
+        additifDao.close();
+        allergeneDao.close();
+        ingredientDao.close();
+        produitDao.close();
+        marqueDao.close();
+        categorieDao.close();
     }
 }

@@ -1,4 +1,4 @@
-package fr.diginamic;
+package fr.diginamic.menu.options;
 
 import fr.diginamic.parser.FileParser;
 import fr.diginamic.parser.FileParserImpl;
@@ -7,8 +7,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
 
-public class ParseFile {
-    public static void main(String[] args) {
+public class ImportFichier extends Option{
+    @Override
+    public boolean executeOption() {
         long time = new Date().getTime();
         FileParser fileParser = new FileParserImpl();
         try {
@@ -21,5 +22,10 @@ public class ParseFile {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return true;
+    }
+
+    public ImportFichier() {
+        super("importer les données du fichier CSV");
     }
 }

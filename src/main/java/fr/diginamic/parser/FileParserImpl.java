@@ -1,5 +1,6 @@
 package fr.diginamic.parser;
 
+import fr.diginamic.dao.DaoFactory;
 import fr.diginamic.threader.VirtualThread;
 import fr.diginamic.token.FileTokeniserImpl;
 import fr.diginamic.token.LineTokeniser;
@@ -17,7 +18,7 @@ import java.util.stream.Stream;
  * */
 public class FileParserImpl implements FileParser {
 
-    /**tokeniser utilisé pour récupérer les tokens de chaque ligne*/
+    /**Tokeniser utilisé pour récupérer les tokens de chaque ligne*/
     private final FileTokeniserImpl fileTokeniser;
     /**Parser de ligne permettant de créer les entités d'une ligne*/
     private final LineParser lineParser = new LineParserImpl();
@@ -63,9 +64,6 @@ public class FileParserImpl implements FileParser {
             firstHalf.join();
             secondHalf.join();
         }
-        //On ferme toutes les connexions ouvertes par les DAOS
-        lineParser.closeDaos();
-        lineParser2.closeDaos();
     }
 
 }

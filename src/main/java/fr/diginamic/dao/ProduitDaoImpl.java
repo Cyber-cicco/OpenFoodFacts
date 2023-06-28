@@ -1,6 +1,7 @@
 package fr.diginamic.dao;
 
 import fr.diginamic.entites.Produit;
+import fr.diginamic.exception.EntityNotFoundException;
 import fr.diginamic.types.RepositoryType;
 
 import java.util.HashMap;
@@ -10,6 +11,8 @@ import java.util.Map;
 public class ProduitDaoImpl extends RepositoryDao<Produit> implements ProduitDao {
 
     private int produitCount;
+
+    private final String ENTITY_NAME = "Marque";
 
     /**
      * Constructeur
@@ -34,10 +37,23 @@ public class ProduitDaoImpl extends RepositoryDao<Produit> implements ProduitDao
         repository.persistMultipleEntites(entites);
     }
 
-    public void extraireNMeilleursParMarque(int n){
-        String query = "select p from Produit p where p.valeurNutritionnelle = 0 and p.marque.nom = 'chabrior'";
+    public List<Produit> extraireNMeilleursParMarque(int n, String marque){
+        marque = marque.toLowerCase();
+        try{
+            String query = "select m from Marque m where m.nom = :nom";
+            Map<String, String> args = new HashMap<>();
+            args.put("nom", marque);
+            if(repository.findByField(query, args).size() == 0){
+                throw new EntityNotFoundException("la marque saisie semble ne pas exister.");
+            }
+
+        } catch (EntityNotFoundException e){
+            System.out.println("Erreur dans la requête : " + e.getMessage());
+        }
+        String query = "select p from Produit p where p.valeurNutritionnelle = 0 and p.marque.nom = :marque order by p.valeurNutritionnelle";
         Map<String, String> args = new HashMap<>();
-        System.out.println(repository.executeQuery(query, args, n));
+        args.put("marque", marque);
+        return repository.executeQuery(query, args, n);
     }
 
     @Override
