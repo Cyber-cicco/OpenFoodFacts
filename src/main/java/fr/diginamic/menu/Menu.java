@@ -7,14 +7,18 @@ import fr.diginamic.utils.ScannerManager;
 import java.util.*;
 
 public class Menu {
-    private Map<Integer, Option> options = new HashMap<>();
-    private Scanner scanner = ScannerManager.getInstance();
+    private final Map<Integer, Option> options = new HashMap<>();
+    private final Scanner scanner = ScannerManager.getInstance();
     private final String PRESENTATION = "OPEN FOOD FACTS";
     public Menu() {
         options.put(1, new ImportFichier());
         options.put(2, new MeilleurPourMarque());
         options.put(3, new MeilleurPourCategorie());
-        options.put(4, new Quitter());
+        options.put(4, new MeilleurPourMarqueCategorie());
+        options.put(5, new IngredientsCourants());
+        options.put(6, new AdditifsCourants());
+        options.put(7, new AllergenesCourants());
+        options.put(8, new Quitter());
     }
 
     public void showMenu(){

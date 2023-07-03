@@ -47,11 +47,11 @@ public class DaoFactory {
      * les connexions à la base de données.
      * */
     public static void closeDaos(){
-        additifDao.close();
-        allergeneDao.close();
-        ingredientDao.close();
-        produitDao.close();
-        marqueDao.close();
-        categorieDao.close();
+        if(additifDao != null) additifDao.close();
+        if(allergeneDao != null) allergeneDao.close();
+        if(ingredientDao != null) ingredientDao.close();
+        if(produitDao != null) produitDao.close();
+        if(marqueDao != null) marqueDao.close();
+        if(categorieDao != null) categorieDao.close();
     }
 }

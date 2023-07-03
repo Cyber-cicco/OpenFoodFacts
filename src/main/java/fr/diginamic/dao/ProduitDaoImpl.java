@@ -10,10 +10,6 @@ import java.util.Map;
 
 public class ProduitDaoImpl extends RepositoryDao<Produit> implements ProduitDao {
 
-    private int produitCount;
-
-    private final String ENTITY_NAME = "Marque";
-
     /**
      * Constructeur
      * Initialise la connexion à la base de données en donnant le type produit
@@ -77,8 +73,29 @@ public class ProduitDaoImpl extends RepositoryDao<Produit> implements ProduitDao
     }
 
     @Override
-    public int getProduitCount() {
-        return produitCount;
+    public List<Produit> extraireNMeilleursParCategorieEtMarque(int nbProduits, String nomCategorie, String nomMarque) {
+        nomCategorie = nomCategorie.toLowerCase();
+        nomMarque = nomMarque.toLowerCase();
+        try{
+            String queryCategorie = "select c from Categorie c where c.libelle = :libelle";
+            String queryMarque = "select m from Marque m where m.nom = :libelle";
+            Map<String, String> args = new HashMap<>();
+            args.put("libelle", nomCategorie);
+            if(repository.findByField(queryCategorie, args).size() == 0){
+                throw new EntityNotFoundException("la catégorie saisie semble ne pas exister.");
+            }
+            args.put("libelle", nomMarque);
+            if(repository.findByField(queryMarque, args).size() == 0){
+                throw new EntityNotFoundException("la marque saisie semble ne pas exister.");
+            }
+        } catch (EntityNotFoundException e){
+            System.out.println("Erreur dans la requête : " + e.getMessage());
+        }
+        String query = "select p from Produit p where p.categorie.libelle = :categorie and p.marque.nom = :marque order by p.valeurNutritionnelle";
+        Map<String, String> args = new HashMap<>();
+        args.put("categorie", nomCategorie);
+        args.put("marque", nomMarque);
+        return repository.executeQuery(query, args, nbProduits);
     }
 
 }

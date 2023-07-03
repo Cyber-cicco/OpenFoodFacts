@@ -296,6 +296,7 @@ public class Produit extends BaseEntity{
     @Override
     public String toString() {
         return nom + "\n" +
+                "Catégorie : " + categorie + "\n" +
                 "Valeur nutrionnelle : " + valeurNutritionnelle + "\n" +
                 "Marque : " + marque + "\n";
     }

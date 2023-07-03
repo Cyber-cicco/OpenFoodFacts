@@ -1,6 +1,5 @@
 package fr.diginamic.parser;
 
-import com.sun.jna.platform.win32.WinBase;
 import fr.diginamic.config.DatabaseConfig;
 import fr.diginamic.dao.*;
 import fr.diginamic.entites.*;

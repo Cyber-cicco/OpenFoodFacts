@@ -3,7 +3,6 @@ package fr.diginamic.dao;
 import fr.diginamic.types.RepositoryType;
 import jakarta.persistence.*;
 
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -154,10 +153,15 @@ public class Repository implements AutoCloseable{
         return query.getResultList();
     }
 
+    public List<Object[]> executeNativeQuery(String statement){
+        Query query = em.createNativeQuery(statement);
+        return query.getResultList();
+    }
+
     /**
      * Permet de récupérer une entité
-     * @param entity
-     * @param id
+     * @param entity : l'entité à récupérer
+     * @param id : l'id de l'entité à récupérer
      * @return l'entité trouvée en base
      * */
     public <T> T getOne(T entity, int id){
@@ -172,14 +176,6 @@ public class Repository implements AutoCloseable{
         generalRepositores.remove(this);
         em.close();
         emf.close();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Repository that = (Repository) o;
-        return ((Repository) o).getDataBaseName() == dataBaseName;
     }
 
     @Override

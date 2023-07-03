@@ -7,5 +7,5 @@ import java.util.List;
 public interface ProduitDao extends BaseDao<Produit> {
     List<Produit> extraireNMeilleursParMarque(int n, String marque);
     List<Produit> extraireNMeilleursParCategorie(int n, String categorie);
-    int getProduitCount();
+    List<Produit> extraireNMeilleursParCategorieEtMarque(int nbProduits, String nomCategorie, String nomMarque);
 }
