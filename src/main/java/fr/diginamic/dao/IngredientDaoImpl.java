@@ -51,4 +51,9 @@ public class IngredientDaoImpl extends RepositoryDao<Ingredient> implements Ingr
         }
         return ingredient;
     }
+
+    public List<Object[]> getIngredientsCourants(int nbIngredients){
+        String nativeQuery = String.format("select i.nom, count(i.nom) as nb_produit from Produit p left join produit_ingredients pi on p.id = pi.id_produit left join Ingredient i on pi.id_ingredient = i.id group by i.nom order by nb_produit DESC limit %s;", nbIngredients);
+        return repository.executeNativeQuery(nativeQuery);
+    }
 }

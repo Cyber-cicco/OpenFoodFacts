@@ -115,12 +115,14 @@ public class Repository implements AutoCloseable{
 
     /**
      * Méthode permettant de sélectionner une entité par la valeur d'un field
-     * @param field : le champ de l'entité que l'on rechercje
-     * @param entityName : le nom de l'entité
-     * @param fieldValue : la valeur du champ recherché
+     * @param args : une map contenant les arguments de la requête JPQL et leur valeur;
+     * @param statement : la requête JPQL
      * */
-    public Object findByField(String entityName, String field, String fieldValue){
-        Query query =  em.createQuery(String.format(SELECT_WITH_CONDITION, entityName, field, fieldValue));
+    public <T> List<T> findByField(String statement, Map<String, String> args){
+        Query query =  em.createQuery(statement);
+        for(String key : args.keySet()){
+            query.setParameter(key, args.get(key));
+        }
         return query.getResultList();
     }
 
@@ -151,10 +153,15 @@ public class Repository implements AutoCloseable{
         return query.getResultList();
     }
 
+    public List<Object[]> executeNativeQuery(String statement){
+        Query query = em.createNativeQuery(statement);
+        return query.getResultList();
+    }
+
     /**
      * Permet de récupérer une entité
-     * @param entity
-     * @param id
+     * @param entity : l'entité à récupérer
+     * @param id : l'id de l'entité à récupérer
      * @return l'entité trouvée en base
      * */
     public <T> T getOne(T entity, int id){
@@ -169,14 +176,6 @@ public class Repository implements AutoCloseable{
         generalRepositores.remove(this);
         em.close();
         emf.close();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Repository that = (Repository) o;
-        return ((Repository) o).getDataBaseName() == dataBaseName;
     }
 
     @Override

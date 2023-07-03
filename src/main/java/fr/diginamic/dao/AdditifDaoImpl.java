@@ -56,4 +56,8 @@ public class AdditifDaoImpl extends RepositoryDao<Additif> implements AdditifDao
         }
         return additif;
     }
+    public List<Object[]> getAdditifsCourants(int nbAdditifs){
+        String nativeQuery = String.format(" select a.libelle, count(a.libelle) as nb_additifs from Produit p left join produit_additifs pa on p.id = pa.id_produit left join Additif a on pa.id_additif = a.id group by a.libelle order by nb_additifs DESC limit %s;", nbAdditifs);
+        return repository.executeNativeQuery(nativeQuery);
+    }
 }

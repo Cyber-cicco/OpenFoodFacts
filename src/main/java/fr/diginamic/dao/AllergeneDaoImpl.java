@@ -56,4 +56,8 @@ public class AllergeneDaoImpl extends RepositoryDao<Allergene> implements Allerg
         }
         return allergene;
     }
+    public List<Object[]> getAllergenesCourants(int nbAllergenes){
+        String nativeQuery = String.format("select a.libelle, count(a.libelle) as nb_allergenes from Produit p left join produit_allergenes pa on p.id = pa.id_produit left join Allergene a on pa.id_allergene = a.id group by a.libelle order by nb_allergenes DESC limit %s;", nbAllergenes);
+        return repository.executeNativeQuery(nativeQuery);
+    }
 }

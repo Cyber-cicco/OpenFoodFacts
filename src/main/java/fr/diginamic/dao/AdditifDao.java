@@ -2,6 +2,7 @@ package fr.diginamic.dao;
 
 import fr.diginamic.entites.Additif;
 
+import java.util.List;
 import java.util.Set;
 
 public interface AdditifDao extends BaseDao<Additif>{
@@ -17,4 +18,5 @@ public interface AdditifDao extends BaseDao<Additif>{
      * @return Additif
      * */
     Additif getAdditif(String code, String nom, Set<Additif> additifs);
+    List<Object[]> getAdditifsCourants(int nbAdditifs);
 }

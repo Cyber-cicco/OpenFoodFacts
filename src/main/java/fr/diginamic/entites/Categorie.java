@@ -19,9 +19,7 @@ public class Categorie extends BaseEntity {
 
     @Override
     public String toString() {
-        return "Categorie{" +
-                "libelle='" + libelle + '\'' +
-                '}';
+        return libelle;
     }
 
     public Categorie(String libelle) {

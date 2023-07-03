@@ -2,3 +2,7 @@
 target
 *.class
 .vscode
+.classpath
+.project
+.factorypath
+.settings

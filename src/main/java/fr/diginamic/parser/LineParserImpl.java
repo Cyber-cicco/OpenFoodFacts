@@ -1,6 +1,5 @@
 package fr.diginamic.parser;
 
-import com.sun.jna.platform.win32.WinBase;
 import fr.diginamic.config.DatabaseConfig;
 import fr.diginamic.dao.*;
 import fr.diginamic.entites.*;
@@ -9,7 +8,6 @@ import fr.diginamic.token.SyntaxToken;
 import fr.diginamic.types.ValeurNutritionnelle;
 
 import static fr.diginamic.config.CSVParams.EXPECTED_PIPES;
-import static fr.diginamic.config.CSVParams.MAX_LINES;
 
 import lombok.SneakyThrows;
 
@@ -412,19 +410,5 @@ public class LineParserImpl implements LineParser{
             produitDao.sauvegarderMultipe(produits);
             produits.clear();
         }
-    }
-
-    /**
-     * Méthode permettant de fermer
-     * les connexions à la base de données.
-     * */
-    public void closeDaos(){
-        System.out.println(produitCount);
-        additifDao.close();
-        allergeneDao.close();
-        ingredientDao.close();
-        produitDao.close();
-        marqueDao.close();
-        categorieDao.close();
     }
 }
