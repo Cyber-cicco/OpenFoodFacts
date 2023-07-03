@@ -8,7 +8,7 @@ Diagramme de classe UML :
 
 Modèle conceptuel de données :
 
-![modèle conceptuel de données](conception/mcd.jpg)
+![modèle conceptuel de données](conception/mcd.png)
 
 Modèle conceptuel de données : 
 
